@@ -1,0 +1,14 @@
+/* S T Y L E S H E E T
+
+Contents
+1. Reset default margins, padding and borders
+
+*/
+
+/* 1. Reset default margins, padding and borders
+––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
