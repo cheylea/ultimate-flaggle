@@ -9,7 +9,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__, instance_relative_config=True)
 
-# Functions used in app go here
+# Functions used in the applications
+
 def main():
     global locations
     global countries
@@ -18,7 +19,8 @@ def main():
     # Get details about the locations
     locations = pd.read_csv('static\country latitude and longitude.csv')
     # Generate list of country indexes
-    countries = list(range(0, 243)) #List out index to select "random" country
+    countries = list(range(0, len(locations))) # List out index to select "random" country
+    r.shuffle(countries)
     # Start from today upon initialisation
     lastshuffled = date.today()
     
@@ -26,7 +28,9 @@ def main():
 # Function to check if we need to shuffle
 def checkShuffle(last_shuffled_date):
     today = date.today()
-    if last_shuffled_date > today + dt.timedelta(days=244) or last_shuffled_date == today:
+    # If it has been 244 days since the last shuffle we shuffle again
+    # This is to avoid cycling through the same order of countries over and over
+    if last_shuffled_date > today + dt.timedelta(days=len(locations)):
         return 1
     else:
         return 0
@@ -37,19 +41,27 @@ def checkShuffle(last_shuffled_date):
 # Home page for website
 @app.route("/")
 def home():
+    global lastshuffled
+
+    # When page is loaded, checks if we need to reshuffle the list
     check_shuffle = checkShuffle(lastshuffled)
 
+    today = date.today()
+
+    # If we do, then shuffle the countries
     if check_shuffle == 1:
-        today = date.today()
         global countries
-        countries = r.shuffle(countries)
-        global lastshuffled
+        r.shuffle(countries)
         lastshuffled = today
     
+    # Systematically go through each index day by day
     country_index = abs((lastshuffled - today).days)
-    country = countries[country_index]
+
+    # Get todays' country
+    global locations
+    country = locations.at[countries[country_index], 'name']
     
-    return render_template("index.html", country = check_shuffle)
+    return render_template("index.html", country = country)
 
 
 # ----- END

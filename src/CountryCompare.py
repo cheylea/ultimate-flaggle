@@ -4,16 +4,18 @@
 # Imports
 import numpy as np
 from geographiclib.geodesic import Geodesic as geo
-import math
+import cv2
+import scipy.spatial as sp
+from PIL import Image
 
 class CountryCompare:
 
     def match_colours(image1, image2):
-        """Create a block to add to the chain
+        """Compare two flags and show the difference between them
 
         Key arguments
         image1 -- first image that uses cv2.imread on an image file
-        image1 -- comparison image that uses cv2.imread on an image file
+        image2 -- comparison image that uses cv2.imread on an image file
         """
         # Check if images are the same initially
         if image1.shape != image2.shape:
@@ -45,14 +47,79 @@ class CountryCompare:
         return match, difference, perc_match
     
     def check_distance(coord1, coord2):
+        """Compare two sets of lat-long coordinates and return the distance and direction between them
+
+        Key arguments
+        coord1 -- first set of coordinates eg. 42.546245,1.601554
+        coord2 -- second set of coordinates to compare to, eg. 42.546245,1.601554
+        """
+
+        # Use geo to get the distance and bearing based on the latitude and longitude coordinates
         compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
         distance = compare['s12']
         bearing = compare['azi1']
 
+        # Create list of cardinals
         cardinals = ["north", "north east", "east", "south east", "south", "south west", "west", "north west"]
+        # Adjust bearing 
         bearing += 22.5
         bearing = bearing % 360
+
+        # Convert bearing to index of the list
         bearing = int(bearing / 45) # values 0 to 7
         direction = cardinals [bearing]
 
         return distance, compare['azi1'], bearing, direction
+
+    def process_flags(imagepath):
+        """Change flag to specific colour palette
+
+        Key arguments
+        imagepath -- path for image to change
+        """
+        #reference: https://sethsara.medium.com/change-pixel-colors-of-an-image-to-nearest-solid-color-with-python-and-opencv-33f7d6e6e20d
+        colours = [(0, 0, 0) # black 
+                  ,(255, 255, 255) # white
+                  ,(255, 0, 0) # red
+                  ,(206, 36, 36) # dark red
+                  ,(34, 134, 30) # green
+                  ,(45, 158, 78) # light green
+                  ,(146, 22, 160) # purple
+                  ,(15, 65, 163) # blue
+                  ,(15, 35, 131) # dark blue
+                  ,(140, 185, 218) # light blue
+                  ,(222, 205, 182) # cream
+                  ,(250, 243, 65) # yellow
+                  ,(234, 203, 63) # gold
+                  ,(255, 128, 0) # orange
+                  ,(97, 54, 46) # brown
+                  ,(160, 160, 160) # grey
+                  ,(244, 142, 147) # pink
+                  ] 
+        
+        image = cv2.imread(imagepath)
+        # convert BGR to RGB image
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        h,w,bpp = np.shape(image)
+
+        # Change colors of each pixel
+        # reference :https://stackoverflow.com/a/48884514/9799700
+        for py in range(0,h):
+            for px in range(0,w):
+
+              #Used this part to find nearest color 
+              #reference : https://stackoverflow.com/a/22478139/9799700
+              input_color = (image[py][px][0],image[py][px][1],image[py][px][2])
+              tree = sp.KDTree(colours) 
+              ditsance, result = tree.query(input_color) 
+              nearest_color = colours[result]
+
+              image[py][px][0]=nearest_color[0]
+              image[py][px][1]=nearest_color[1]
+              image[py][px][2]=nearest_color[2]
+        
+        image = Image.fromarray(image)
+        image = image.resize((800,530))
+        image.save(imagepath.replace("flags","cleaned_flags"))
+

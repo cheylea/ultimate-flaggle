@@ -15,8 +15,8 @@ import numpy as np
 from src.CountryCompare import CountryCompare as cc
 
 # Testing image comparison
-image1 = cv2.imread('static\images\china-test.png')
-image2 = cv2.imread('static\images\seychelles-test.png')
+image1 = cv2.imread('static/images/cleaned_flags/bd.png')
+image2 = cv2.imread('static/images/cleaned_flags/sc.png')
 
 result = cc.match_colours(image1, image2)
 
@@ -26,3 +26,8 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 print(result[2])
+
+# Testing flag processing
+imagepath = 'static/images/flags/ad.png'
+
+cc.process_flags(imagepath)
