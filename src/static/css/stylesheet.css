@@ -1,0 +1,55 @@
+/* S T Y L E S H E E T
+
+Contents
+1. Reset default margins, padding and borders
+
+*/
+
+/* 1. Reset default margins, padding and borders
+––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #BEDCFE;
+  }
+  
+/* 2. Header
+––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+  .header {
+    padding: 30px;
+    text-align: center;
+    font-size: 35px;
+    color: #2F4B26
+  }
+  
+/* 3. Body Columns
+––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+  .column {
+    float: left;
+    width: 33.33%;
+    padding: 10px;
+    color: #2F4B26;
+    text-align: center;
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  
+/* 4. Footer
+––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+  .footer {
+    background-color: #3E885B;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  
