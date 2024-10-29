@@ -2,23 +2,66 @@
 <html lang="en">
 <head>
     <!-- Basic Page Needs
-         –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-         <meta charset="utf-8">
-         <title>Website Name</title>
-         <meta name="description" content="Description for website">
-         <meta name="author" content="Author Name">
-         <!-- CSS
-            –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
-         <!-- Favicon
-            –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-         <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+   <meta charset="utf-8">
+   <title>Website Name</title>
+   <meta name="description" content="Description for website">
+   <meta name="author" content="Author Name">
+   <!-- CSS
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+   <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
+   <!-- Favicon
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Ultimate Flaggle</title>
 </head>
 <body>
-Today's country: {{country}}
+<div class="header">
+   <h2>Ultimate Flaggle</h2>
+ </div>
+ 
+ <div class="row">
+   <div class="column" ></div>
+   <div class="column" style="background-color:#85BDA6;">
+      <p>{{country}}</p>
+      <p>Guess today's country!</p>
+
+      <form action="{{ url_for("guesscountry")}}" method="post">
+         <label for="guessedcountry">Please select a country from the list below</label>
+         <br>
+         <br>
+         <select id="guessedcountry" name="guessedcountry">
+         <!-- Goes through each test name in the database to display in a list -->
+         {% for country in countries %}
+         <option value='{{country}}'>{{country}}</option>
+         {% endfor %}
+     </form>
+
+    
+     
+ 
+   
+
+   </div>
+   </div>
+   <div class="button">
+       <input type="submit" value="Guess!">
+   </div>
+   </div>
+
+   <div>
+      {% for country in guessed_countries %}
+      {{country}}
+      {% endfor %}
+   </div>
+
+ </div>
+ 
+ <div class="footer">
+   <p>Footer</p>
+ </div>
 
 </body>
 </html>
