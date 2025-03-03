@@ -38,8 +38,6 @@
          <option value='{{country}}'>{{country}}</option>
          {% endfor %}
      </form>
-
-    
      
  
    
@@ -53,8 +51,17 @@
 
    <div>
       {% for country in guessed_countries %}
-      {{country}}
+      <p>{{country}}</p>
       {% endfor %}
+
+      {% for distance in guessed_distances %}
+      <p>{{distance}}</p>
+      {% endfor %}
+
+      {% for direction in guessed_directions %}
+      <p>{{direction}}</p>
+      {% endfor %}
+
    </div>
 
  </div>
