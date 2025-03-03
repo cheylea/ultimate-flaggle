@@ -30,7 +30,7 @@ def main():
     lastshuffled = date.today()
 
     global todayscountry
-    global guessed_countries #will replace with proper cached list later
+    global guessed_countries # will replace with proper cached list later
     guessed_countries = []
     
 
@@ -71,34 +71,48 @@ def home():
     global todayscountry
     todayscountry = locations.at[countries[country_index], 'name']
     todayscountryid = locations.at[countries[country_index], 'country']
-    todayscountrylat = locations.at[countries[country_index], 'latitude']
-    todayscountrylong = locations.at[countries[country_index], 'longitude']
+    todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
+    todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
 
     # Process any guessed countries
 
     image_compare_results = []
     distance_compare_results = []
+    guessed_distances = []
+    guessed_directions = []
+
     for x in guessed_countries:
-        guessedcountryid = locations.loc[locations['name'] == x, 'country']
-        guessedcountrylat = locations.loc[locations['name'] == x, 'latitude']
-        guessedcountrylong = locations.loc[locations['name'] == x, 'longitude']
-        guessed_path = 'static/images/cleaned_flags/' + guessedcountryid + '.png'
-        answer_path = 'static/images/cleaned_flags/' + todayscountryid + '.png'
+        guessedcountryid = locations.loc[locations['name'] == x, 'country'].values[0]
+        guessedcountrylat = float(locations.loc[locations['name'] == x, 'latitude'].values[0])
+        guessedcountrylong = float(locations.loc[locations['name'] == x, 'longitude'].values[0])
+
+        guessed_path = 'src/static/images/cleaned_flags/' + str(guessedcountryid).lower() + '.png'
+        answer_path = 'src/static/images/cleaned_flags/' + str(todayscountryid).lower() + '.png'
 
         image1 = cv2.imread(guessed_path)
         image2 = cv2.imread(answer_path)
 
-        coord1 = str(guessedcountrylat) + ',' + str(guessedcountrylong)
-        coord2 = str(todayscountrylat) + ',' + str(todayscountrylong)
+        image_result = cc.match_colours(image1, image2)
+        cv2.imwrite("src/guesses/output_" + str(guessedcountryid).lower() + ".png", image_result[1])
 
-        image_compare_results.append(cc.match_colours(image1, image2))
+        coord1 = [guessedcountrylat, guessedcountrylong]
+        coord2 = [todayscountrylat, todayscountrylong]
+
+        
+
         distance_compare_results.append(cc.check_distance(coord1, coord2))
+
+        guessed_distances = [sublist[0] for sublist in distance_compare_results]
+        guessed_directions = [sublist[3] for sublist in distance_compare_results]
     
-    # then need to add a display for all the results in some way 
+        
 
-
-
-    return render_template("index.html", country = todayscountry, countries = countries_sorted, guessed_countries = guessed_countries)
+    return render_template("index.html"
+                           , country = todayscountry
+                           , countries = countries_sorted
+                           , guessed_countries = guessed_countries
+                           , guessed_distances = guessed_distances
+                           , guessed_directions = guessed_directions)
 
 # Compare Countries
 @app.route("/guesscountry", methods=['GET', 'POST'])
