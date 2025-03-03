@@ -15,18 +15,11 @@ import numpy as np
 from src.CountryCompare import CountryCompare as cc
 
 # Testing image comparison
-image1 = cv2.imread('src/static/images/cleaned_flags/bd.png')
-image2 = cv2.imread('src/static/images/cleaned_flags/sc.png')
 
-result = cc.match_colours(image1, image2)
+coord1 = [33.93911,67.709953]
+coord2 = [-75.250973,-0.071389]
 
-# Display the result
-cv2.imwrite("output.png", result[1])
+print(coord1)
+result = cc.check_distance(coord1, coord2)
 
-
-print(result[2])
-
-# Testing flag processing
-# imagepath = 'static/images/flags/ad.png'
-# 
-# cc.process_flags(imagepath)
+print(result)
