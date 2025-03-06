@@ -7,6 +7,7 @@ import datetime as dt
 from datetime import date
 from apscheduler.schedulers.background import BackgroundScheduler
 import cv2
+import math
 
 app = Flask(__name__, instance_relative_config=True)
 
@@ -76,10 +77,12 @@ def home():
 
     # Process any guessed countries
 
-    image_compare_results = []
     distance_compare_results = []
     guessed_distances = []
     guessed_directions = []
+    guessed_image_result_path = []
+    guessed_image_path = []
+    guessed_directions_image_path = []
 
     for x in guessed_countries:
         guessedcountryid = locations.loc[locations['name'] == x, 'country'].values[0]
@@ -93,26 +96,35 @@ def home():
         image2 = cv2.imread(answer_path)
 
         image_result = cc.match_colours(image1, image2)
-        cv2.imwrite("src/guesses/output_" + str(guessedcountryid).lower() + ".png", image_result[1])
+        guessed_image_path.append(url_for('static', filename="/images/cleaned_flags/" + str(guessedcountryid).lower() + ".png"))
+        guessed_image_result_path.append(url_for('static', filename="/guesses/output_" + str(guessedcountryid).lower() + ".png"))
+        cv2.imwrite("src/static/guesses/output_" + str(guessedcountryid).lower() + ".png", image_result[1])
 
         coord1 = [guessedcountrylat, guessedcountrylong]
         coord2 = [todayscountrylat, todayscountrylong]
 
         
 
+        
+
         distance_compare_results.append(cc.check_distance(coord1, coord2))
 
         guessed_distances = [sublist[0] for sublist in distance_compare_results]
+        guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
         guessed_directions = [sublist[3] for sublist in distance_compare_results]
+        guessed_directions_image_path = [url_for('static', filename="/images/directions/" + sublist[3] + ".png") for sublist in distance_compare_results]
+
+
+
+    # Zip the lists together before passing to the template
+    guesses = zip(guessed_image_path, guessed_countries, guessed_distances, guessed_directions_image_path, guessed_image_result_path)
     
         
 
     return render_template("index.html"
                            , country = todayscountry
                            , countries = countries_sorted
-                           , guessed_countries = guessed_countries
-                           , guessed_distances = guessed_distances
-                           , guessed_directions = guessed_directions)
+                           , guesses = guesses)
 
 # Compare Countries
 @app.route("/guesscountry", methods=['GET', 'POST'])

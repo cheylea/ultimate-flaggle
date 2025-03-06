@@ -12,12 +12,15 @@ Contents
     padding: 0;
     box-sizing: border-box;
   }
-  
-  body {
+
+  html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     font-family: Arial, Helvetica, sans-serif;
     background-color: #2394E0;
   }
-  
+
 /* 2. Header
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .header {
@@ -28,11 +31,19 @@ Contents
     background-color: #231651
   }
   
-/* 3. Body Columns
+/* 3. Body
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
-  .column {
+  .column-left {
     float: left;
-    width: 33.33%;
+    width: 20%;
+    padding: 10px;
+    text-align: center;
+
+  }
+
+  .column-mid {
+    float: left;
+    width: 60%;
     padding: 10px;
     text-align: center;
 
@@ -45,12 +56,33 @@ Contents
     clear: both;
   }
   
+  /* Table Styling */
+  
+  table.myTable {
+    align-content: center;
+    background-color: #E9F1F7;
+    text-align: center;
+  }
+
+  table.myTable td, table.myTable th {
+    padding: 6px 10px;
+  }
+
+  table.myTable thead {
+    background: #B594B6;
+    font-weight: bold;
+  }
+
+  table.myTable thead th {
+    font-weight: normal;
+  }
 /* 4. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .footer {
     background-color: #B594B6;
     padding: 10px;
     text-align: center;
+    margin-top: auto;
   }
   
   
