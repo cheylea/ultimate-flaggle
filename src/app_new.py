@@ -48,7 +48,7 @@ def get_user_data(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ?", (unique_id, date.today()))
+    cursor.execute("SELECT * FROM GameDetail WHERE UniqueId = ? AND CAST(DateTimeGussed) = ?", (unique_id, date.today()))
     data = cursor.fetchone()
 
     conn.close()
@@ -89,6 +89,7 @@ def main():
                                 UniqueId integer,
                                 GameId integer,
                                 DateTimeGuessed datetime,
+                                GuessOrder integer,
                                 CountryId, 
                                 Distance float,
                                 Direction text,
@@ -162,18 +163,7 @@ def home():
     if game_data != None:
         #do some stuff where we get the existing to display 
         print("nothing here!...yet")
-        #stuff below I need for formatting results
-        #guessed_image_path = "/images/cleaned_flags/" + str(guessedcountryid).lower() + ".png"
-        #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
-        #guessed_directions_image_path = [url_for('static', filename="/images/directions/" + sublist[3] + ".png") for sublist in distance_compare_result]
     
-    # if it does equal none need to set a game id
-    # need to add check for reaching 6 guesses and game over
-    # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
-
-    # that plus making the website just look better in general 
-
-
     return render_template("index.html", user_id = user_id, country = todayscountry, countries = countries_sorted)
 
 
@@ -204,8 +194,10 @@ def guesscountry(user_id, gameid):
 
     distance_compare_result = cc.check_distance(coord1, coord2)
 
-    distance = distance_compare_result[0]
-    direction = distance_compare_result[3]
+    guessed_distances = [sublist[0] for sublist in distance_compare_result]
+    guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
+    guessed_directions = [sublist[3] for sublist in distance_compare_result]
+    guessed_directions_image_path = [url_for('static', filename="/images/directions/" + sublist[3] + ".png") for sublist in distance_compare_result]
 
     # Retreive the urls for the cleaned flag images for both guesses and todays country
     guessed_path = 'src/static/images/cleaned_flags/' + str(guessedcountryid).lower() + '.png'
@@ -216,6 +208,7 @@ def guesscountry(user_id, gameid):
     # Match colours and save resulting image
     image_result = cc.match_colours(image1, image2)
     cv2.imwrite("src/static/guesses/output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png", image_result[1])
+    guessed_image_path = "/images/cleaned_flags/" + str(guessedcountryid).lower() + ".png"
     guessed_image_result_path = "/guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
 
 
@@ -223,8 +216,19 @@ def guesscountry(user_id, gameid):
 
     # Insert block and used word into votes database
     try:
-        insert_game_details = "INSERT INTO GameDetail (block) VALUES ('" + gameid + "', '" + dt.datetime.now() + "', '" + guessedcountryid + "', '" + distance + "', '" + direction + "', '" + guessed_image_result_path +");"
+        insert_game_details = "INSERT INTO GameDetail (block) VALUES ('" + gameid + "', '" + dt.datetime.now() + "', '" + guessedcountryid + "', '" + distance + "', '" + direction + "', '" + image_url +");"
+        insert_game = "INSERT INTO words (word, pollstation) VALUES ('" + secretword + "', '" + pollstation + "');"
+
+        GameDetailId integer PRIMARY KEY,
+        GameId integer,
+        DateTimeGuessed datetime,
+        GuessedCountryId, 
+        Distance float,
+        Direction text,
+        ComparedImageUrl text
+
         sql.execute_sql(conn, insert_game_details)
+        sql.execute_sql(conn, insert_game)
         conn.commit()
         conn.close
     except:

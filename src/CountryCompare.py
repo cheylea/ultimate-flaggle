@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-# Python program to compare two images of flags
+# Set of Python functions for comparing two flags
 
-# Imports
+### Imports
 import numpy as np
 from geographiclib.geodesic import Geodesic as geo
 import cv2
@@ -9,7 +9,7 @@ import scipy.spatial as sp
 from PIL import Image
 
 class CountryCompare:
-
+    # Function for cross references colours for two cleaned flags
     def match_colours(image1, image2):
         """Compare two flags and show the difference between them
 
