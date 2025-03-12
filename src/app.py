@@ -11,8 +11,9 @@ from socket import gethostname # for PythonAnywhere
 from apscheduler.schedulers.background import BackgroundScheduler # for refreshing the page
 
 # Setup Flask app
-from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, session
 app = Flask(__name__, instance_relative_config=True)
+app.secret_key = "70656E6E79616E64626173696C" # Required for session
 
 # Setup for identifying unique user id
 import uuid
@@ -34,13 +35,19 @@ from DateChecks import DateChecks as dc # Import all functions for date comparis
 def get_unique_id():
     """Get or create a unique ID for tracking."""
     unique_id = request.cookies.get("unique_id")
+
     if not unique_id:
         unique_id = str(uuid.uuid4())  # Generate a unique ID
-    return unique_id
+        # Create a response and set the cookie
+        response = make_response(unique_id)
+        response.set_cookie("unique_id", unique_id, max_age=60*60*24*365)  # Expires in 1 year
+        return unique_id, response
 
-# 2. Get the users game data
-def get_user_data(conn, unique_id):
-    """Fetch user game data from the database.
+    return unique_id, None  # If cookie exists, return the existing ID
+
+# 2. Get the users game data from today
+def get_user_game_data_today(conn, unique_id):
+    """Fetch user game data from the database for today.
     
     Key arguments
     conn -- connection to the sqlite database
@@ -48,11 +55,51 @@ def get_user_data(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ?", (unique_id, date.today()))
+    cursor.execute("SELECT CountryId, Distance, Direction, ComparedImageUrl FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ?", (unique_id, date.today()))
+    data = cursor.fetchall()
+
+    conn.close()
+    return data
+
+# 2. Get the users game data from today
+def get_user_last_game_id(conn, unique_id):
+    """Fetch the gameid last stored for the user
+    
+    Key arguments
+    conn -- connection to the sqlite database
+    uniqueid -- unique id for a given user
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT MAX(GameId) FROM GameDetail WHERE UniqueId = ?", (unique_id,))
     data = cursor.fetchone()
 
     conn.close()
-    return data   
+    return data
+
+# 2. Insert game guess
+def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction, image_url):
+    """Insert the latest game guess
+    
+    Key arguments
+    conn -- connection to the sqlite database
+    unique_id -- unique id for a given user
+    game_id -- the id for the game
+    country_id -- an id code for a guesses country
+    distance -- float value for distance between guessed country and answer
+    direction -- value for direction between guessed country and answer
+    image_url -- the image url for compared flags
+    """
+    cursor = conn.cursor()
+
+    # Correct SQL query: specify all the column names
+    sql = """
+    INSERT INTO GameDetail (UniqueId, GameId, DateTimeGuessed, CountryId, Distance, Direction, ComparedImageUrl)
+    VALUES (?, ?, ?, ?, ?, ?, ?);
+    """
+    cursor.execute(sql, (unique_id, game_id, dt.datetime.now(), country_id, distance, direction, image_url))
+    conn.commit()
+    cursor.close()
 
 # 3. Main
 # Function that runs upon initialisation.
@@ -67,13 +114,12 @@ def main():
     global countries_sorted
     global max_guesses
     global country_index
-    global conn
+    global flaggle
     
     max_guesses = 6
 
     # Create table for the flaggle game details database
     flaggle = r"databases\flaggle.db"
-    conn = sql.connect_to_database(flaggle)
 
     # Answers
     drop_table_answer = """DROP TABLE IF EXISTS Answer; """
@@ -129,8 +175,7 @@ def main():
 # Home page for website
 @app.route("/")
 def home():
-    global conn
-
+    global flaggle
     ### Set up the game and fetch any required user information
     global locations
     global lastshuffled
@@ -149,41 +194,72 @@ def home():
     todayscountryid = locations.at[countries[country_index], 'country']
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    # Get any existing game data for the user
-    user_id = get_unique_id()
-    print(user_id)
-    conn = sql.connect_to_database(r"databases\flaggle.db")
+    # Get any existing id for user
+    user_id, response = get_unique_id()
+    if response:
+        # Ensure the response includes the rendered template
+        response.set_data(render_template("index.html", user_id=user_id))
+    
     
     
     ### Display any guessed countries for the user
-    # Fetch game data
-    game_data = get_user_data(conn, user_id)
-    
-    if game_data != None:
-        #do some stuff where we get the existing to display 
+    # Fetch todays game data
+    conn = sql.connect_to_database(flaggle)
+    user_today_data = get_user_game_data_today(conn, user_id)
+    conn.close
+    # Fetch id for last game played
+    conn = sql.connect_to_database(flaggle)
+    game_id = get_user_last_game_id(conn, user_id)
+    conn.close
+    game_id = game_id[0]
+    # Generate new game id
+    if game_id != None and user_today_data == []:
+        game_id = game_id + 1 # Increase last game id by 1
+        print("First guess of the day!")
+    if game_id == None:
+        game_id = 1 # First game for this user
+        print("First game ever!")
+
+    if user_today_data:
         print("nothing here!...yet")
-        #stuff below I need for formatting results
-        #guessed_image_path = "/images/cleaned_flags/" + str(guessedcountryid).lower() + ".png"
-        #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
-        #guessed_directions_image_path = [url_for('static', filename="/images/directions/" + sublist[3] + ".png") for sublist in distance_compare_result]
+        guessed_country_id, guessed_distances, direction, image_url = zip(*user_today_data)
+    else:
+        guessed_country_id, guessed_distances, direction, image_url = [], [], [], []  # Empty lists if no data
+
+    guessed_image_path = ["/static//images/cleaned_flags/" + str(x).lower() + ".png" for x in guessed_country_id]
+    guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
+    guessed_directions_image_path = ["/static//images/directions/" + str(x).lower() + ".png" for x in direction]
+
+    print(guessed_image_path)
+    print(guessed_directions_image_path)
+    # Zip the lists together before passing to the template
+    guesses = zip(guessed_image_path, guessed_country_id, guessed_distances, guessed_directions_image_path, image_url)
     
-    # if it does equal none need to set a game id
+    # Set session ids
+    session["user_id"] = user_id
+    session["game_id"] = game_id   
+
+    # fix so it displays country name
+    # maybe review the colour processing
     # need to add check for reaching 6 guesses and game over
     # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
+    # that plus making the website just look better in general
 
-    # that plus making the website just look better in general 
-
-
-    return render_template("index.html", user_id = user_id, country = todayscountry, countries = countries_sorted)
-
+    return render_template("index.html"
+                           , country = todayscountry
+                           , countries = countries_sorted
+                           , guesses = guesses)
 
 # Compare Countries
 @app.route("/guesscountry", methods=['GET', 'POST'])
-def guesscountry(user_id, gameid):
+def guesscountry():
     global conn
     global country_index
 
-    # get user id and game id somehow
+    # Get user id and game id
+    
+    user_id = session.get("user_id")  # Retrieve the ID from query parameters
+    game_id = session.get("game_id")  # Retrieve the ID from query parameters
 
     guessed_country = request.form['guessedcountry']
     
@@ -216,16 +292,13 @@ def guesscountry(user_id, gameid):
     # Match colours and save resulting image
     image_result = cc.match_colours(image1, image2)
     cv2.imwrite("src/static/guesses/output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png", image_result[1])
-    guessed_image_result_path = "/guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
+    guessed_image_result_path = "/static//guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
 
-
+    
     # Store Results in Database
-
-    # Insert block and used word into votes database
     try:
-        insert_game_details = "INSERT INTO GameDetail (block) VALUES ('" + gameid + "', '" + dt.datetime.now() + "', '" + guessedcountryid + "', '" + distance + "', '" + direction + "', '" + guessed_image_result_path +");"
-        sql.execute_sql(conn, insert_game_details)
-        conn.commit()
+        conn = sql.connect_to_database(flaggle)
+        insert_game_guess(conn, user_id, game_id, guessedcountryid, distance, direction, guessed_image_result_path)
         conn.close
     except:
         return redirect("error.html")
