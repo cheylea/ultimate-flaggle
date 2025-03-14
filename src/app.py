@@ -226,19 +226,36 @@ def home():
     else:
         guessed_country_id, guessed_distances, direction, image_url = [], [], [], []  # Empty lists if no data
 
+    # Format the select results to display in the template
     guessed_image_path = ["/static//images/cleaned_flags/" + str(x).lower() + ".png" for x in guessed_country_id]
     guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
     guessed_directions_image_path = ["/static//images/directions/" + str(x).lower() + ".png" for x in direction]
+    # Convert country IDs into Country Names
+    country_name_dict = dict(zip(locations['country'], locations['name']))
+    guesses_country_name = [country_name_dict.get(code, code) for code in guessed_country_id]
 
-    print(guessed_image_path)
-    print(guessed_directions_image_path)
+    # Check player game conditions
+    if any(x == 0 for x in guessed_distances) == True:
+        has_player_won = 1
+    else:
+        has_player_won = 0
+
+    if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
+        has_player_lost = 1
+    else:
+        has_player_lost = 0
+    
+    print(has_player_lost)
+    print(has_player_won)
+
     # Zip the lists together before passing to the template
-    guesses = zip(guessed_image_path, guessed_country_id, guessed_distances, guessed_directions_image_path, image_url)
+    guesses = zip(guessed_image_path, guesses_country_name, guessed_distances, guessed_directions_image_path, image_url)
     
     # Set session ids
     session["user_id"] = user_id
     session["game_id"] = game_id   
 
+    
     # fix so it displays country name
     # maybe review the colour processing
     # need to add check for reaching 6 guesses and game over
@@ -248,7 +265,9 @@ def home():
     return render_template("index.html"
                            , country = todayscountry
                            , countries = countries_sorted
-                           , guesses = guesses)
+                           , guesses = guesses
+                           , won = has_player_won
+                           , lost = has_player_lost)
 
 # Compare Countries
 @app.route("/guesscountry", methods=['GET', 'POST'])
