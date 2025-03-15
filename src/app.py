@@ -196,9 +196,6 @@ def home():
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
     # Get any existing id for user
     user_id, response = get_unique_id()
-    if response:
-        # Ensure the response includes the rendered template
-        response.set_data(render_template("index.html", user_id=user_id))
     
     
     
@@ -262,12 +259,20 @@ def home():
     # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
     # that plus making the website just look better in general
 
-    return render_template("index.html"
+    # Render the template normally
+    rendered_template = render_template("index.html"
                            , country = todayscountry
                            , countries = countries_sorted
                            , guesses = guesses
                            , won = has_player_won
                            , lost = has_player_lost)
+
+    if response:  
+        # Set the response body to the rendered template
+        response.set_data(rendered_template)
+        return response  # Return response with cookie set
+
+    return rendered_template  # If no new cookie, return the page normally
 
 # Compare Countries
 @app.route("/guesscountry", methods=['GET', 'POST'])
