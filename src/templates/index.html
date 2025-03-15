@@ -68,11 +68,19 @@
 
       <div class="howToPopup" id="youWin" style="display: none;">
         <p>You won!</p>
+        <p>Current win streak: {{current_streak}} </p>
+        <p>Average numbers of guesses: {{ average_win_guesses }}</p>
+        <p>Average time to win: {{ average_win_time }} minutes</p>
+        <p>See stats below</p>
         <button onclick="document.getElementById('youWin').style.display='none'">Close</button>
     </div>
     
     <div class="howToPopup" id="youLose" style="display: none;">
         <p>You lose!</p>
+        <p>Current win streak: {{current_streak}} </p>
+        <p>Average numbers of guesses: {{ average_win_guesses }}</p>
+        <p>Average time to win: {{ average_win_time }} minutes</p>
+        <p>See stats below</p>
         <button onclick="document.getElementById('youLose').style.display='none'">Close</button>
     </div>
 
