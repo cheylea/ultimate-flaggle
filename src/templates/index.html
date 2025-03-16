@@ -5,8 +5,8 @@
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
    <meta charset="utf-8">
    <title>Ultimate Flaggle</title>
-   <meta name="description" content="Description for website">
-   <meta name="author" content="Author Name">
+   <meta name="description" content="Website for playing the game 'Ultimate Flaggle'.">
+   <meta name="author" content="Cheylea Hopkinson">
    <!-- CSS
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/stylesheet.css') }}">
@@ -15,38 +15,58 @@
    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Flaggle</title>
+    
+    <!-- Libraries
+      –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 </head>
 <body>
+<!-- Header -->
 <div class="header">
    <h2>Ultimate Flaggle</h2>
- </div>
- 
+</div>
 
- <div class="row">
-   <div class="column-left" ></div>
-   <div class="column-mid" style="background-color:#9AE05C;">
-      <p>{{country}}</p>
-      <p>Guess today's country!</p>
-      <button onclick="document.getElementById('howToPopup').style.display='block'">How to play</button>
+<!-- Popup icons for how to play and view current stats -->
+<div class="row">
+  <div class="column-left" ></div>
+  <div class="column-mid" style="border-radius:  15px 15px 0px 0px;">
+    <!-- How to button -->
+    <header style="background-color:#E9F1F7;color:#231651;">
+      <span onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#10067;</span>
+    </header>
+    <!-- Stats button -->
+    <header style="background-color:#E9F1F7;color:#231651;">
+      <span onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#128202;</span>
+    </header>
+  </div>
+  <div class="column-left" ></div>
+</div>
 
-      <div class="howToPopup" id="howToPopup">
-        <header style="background-color:#E9F1F7;color:#231651;">
-          <span onclick="document.getElementById('howToPopup').style.display='none'" class="close-button topright">&times;</span>
-        </header>
+<!-- Various popups that may display -->
+<div class="row">
+  <div class="column-left" ></div>
+  <div class="column-mid">
+    <!-- How to pop up -->
+    <div class="howToPopup" id="howToPopup">
+      <!-- Close button in the top right -->
+      <header style="background-color:#E9F1F7;color:#231651;">
+        <span onclick="document.getElementById('howToPopup').style.display='none'" class="close-button topright">&times;</span>
+      </header>
+      <!-- Show icon on the page -->
       <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="ultimate flaggle logo">
+      <!-- How to details -->
       <h1>How does it work?</h1>
       <br>
       <p>
-        
         This version of flaggle works by combining the approachs of <a href="https://flagle.gg/" target="_blank">FLAGLE</a> and <a href="https://www.flaggle.net/" target="_blank">Flaggle</a>.
         You guess a country and are shown hints for how close you are to the country to guess. Hints are the distance, direction and flag colour comparison.
         The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.
         Please note, flags have been "cleaned" to be the same dimensions and a set of 17 colour shades so may not look exactly identical to the original flag.
       </p>
       <br>
-      <p> Colours used to process flags:
-      </p>
+      <p> Colours used to process flags:</p>
       <br>
       <p><div class="circle" style="background: #000000;"></div>
         <div class="circle" style="background: #FFFFFF;"></div>
@@ -64,87 +84,136 @@
         <div class="circle" style="background: #61362E;"></div>
         <div class="circle" style="background: #F48E93;"></div>
       </p>
-      </div>
+    </div>
 
-      <div class="howToPopup" id="youWin" style="display: none;">
-        <p>You won!</p>
-        <p>Current win streak: {{current_streak}} </p>
-        <p>Average numbers of guesses: {{ average_win_guesses }}</p>
-        <p>Average time to win: {{ average_win_time }} minutes</p>
-        <p>See stats below</p>
-        <button onclick="document.getElementById('youWin').style.display='none'">Close</button>
+    <!-- Winning pop up-->
+    <div class="howToPopup" id="youWin" style="display: none;">
+      <!-- Close button in the top right -->
+      <header style="background-color:#E9F1F7;color:#231651;">
+        <span onclick="document.getElementById('youWin').style.display='none'" class="close-button topright">&times;</span>
+      </header>
+      <!-- Winning details and stats -->
+      <p>You won!</p>
+      <table class="statsTable">
+        <tr>
+            <th>Win Streak</th>
+            <th>Average Guesses</th>
+            <th>Average Minutes</th>
+        </tr>
+        <tr>
+           <td>{{current_streak}}</td>
+            <td>{{ average_win_guesses }}</td>
+            <td>{{ average_win_time }}</td>
+        </tr>
+      </table>
+      <table class="statsTable">
+        <tr>
+            <th>Max Streak</th>
+            <th>Win Rate</th>
+            <th>Total Played</th>
+        </tr>
+        <tr>
+            <td>{{ max_streak }}</td>
+            <td>{{ win_rate }}</td>
+            <td>{{ total_played }}</td>
+        </tr>
+      </table>
+      <p>See stats below</p>
     </div>
     
+    <!-- Winning pop up -->
     <div class="howToPopup" id="youLose" style="display: none;">
-        <p>You lose!</p>
-        <p>Current win streak: {{current_streak}} </p>
-        <p>Average numbers of guesses: {{ average_win_guesses }}</p>
-        <p>Average time to win: {{ average_win_time }} minutes</p>
-        <p>See stats below</p>
-        <button onclick="document.getElementById('youLose').style.display='none'">Close</button>
+      <!-- Close button in the top right -->
+      <header style="background-color:#E9F1F7;color:#231651;">
+        <span onclick="document.getElementById('youLose').style.display='none'" class="close-button topright">&times;</span>
+      </header>
+      <!-- Losing details and stats -->
+      <p>You lose!</p>
+      <table class="statsTable">
+        <tr>
+            <th>Win Streak</th>
+            <th>Average Guesses</th>
+            <th>Average Minutes</th>
+        </tr>
+        <tr>
+           <td>{{current_streak}}</td>
+            <td>{{ average_win_guesses }}</td>
+            <td>{{ average_win_time }}</td>
+        </tr>
+      </table>
+      <table class="statsTable">
+        <tr>
+            <th>Max Streak</th>
+            <th>Win Rate</th>
+            <th>Total Played</th>
+        </tr>
+        <tr>
+            <td>{{ max_streak }}</td>
+            <td>{{ win_rate }}</td>
+            <td>{{ total_played }}</td>
+        </tr>
+      </table>
+      <p>See stats below</p>
     </div>
+  </div>
+</div>
 
-      <form action="{{ url_for("guesscountry")}}" method="post">
-         <label for="guessedcountry">Please select a country from the list below</label>
-         <br>
-         <br>
-         <select id="guessedcountry" name="guessedcountry">
-         <!-- Goes through each test name in the database to display in a list -->
-         <option disabled selected value> -- select a country! -- </option>
-         {% for country in countries %}
-         <option value='{{country}}'>{{country}}</option>
-         {% endfor %}
-     </form>
-     
- 
-   
 
-   </div>
-   </div>
-   <div class="button">
-       <input id="guess-button" type="submit" value="Guess!">
-   </div>
-   </div>
+<!-- Countries to select and guess on the page -->
+<div class="row">
+  <div class="column-left" ></div>
+  <div class="column-mid">
+    <!--Generate countries -->
+    <form action="{{ url_for('guesscountry') }}" method="post">
+      <select id="guessedcountry" name="guessedcountry" style="width: 300px;">
+          <option disabled selected value> -- pick a country to guess! -- </option>
+          {% for country in countries %}
+          <option value="{{ country }}">{{ country }}</option>
+          {% endfor %}
+      </select>
+      <!-- Guess button -->
+        <input class="guessButton" id="guess-button" type="submit" value="GUESS!">
+    </form>
+  </div>
+</div>
 
-   <div class="row">
-   <div class="column-left" ></div>
-   <div class="column-mid" style="background-color:#9AE05C;">
-      <h2>Guess Results</h2>
+<!-- Display results in the page -->
+<div class="row">
+  <div class="column-left" ></div>
+  <div class="column-mid" style="border-radius:  0px 0px 15px 15px;">
+    <table class="myTable" style="border-radius:  15px 15px 15px 15px;">
+       <tr>
+           <th>Flag</th>
+           <th>Country</th>
+           <th>Distance</th>
+           <th>Direction</th>
+           <th>Difference</th>
+       </tr>
+       {% for flag, country, distance, direction, image in guesses %}
+       <tr>
+          <td><img src="{{ flag }}" style="max-width: 100%; height: auto;"></td>
+           <td>{{ country }}</td>
+           <td>{{ distance }}</td>
+           <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
+           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
+       </tr>
+       {% endfor %}
+    </table>
+  </div>
+</div>
 
-      <table class="myTable">
-         <tr>
-             <th>Guessed Flag</th>
-             <th>Guessed Country</th>
-             <th>Distance</th>
-             <th>Direction</th>
-             <th>Flag Difference</th>
-         </tr>
-         {% for flag, country, distance, direction, image in guesses %}
-         <tr>
-            <td><img src="{{ flag }}" style="max-width: 100%; height: auto;"></td>
-             <td>{{ country }}</td>
-             <td>{{ distance }}</td>
-             <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
-             <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
-         </tr>
-         {% endfor %}
-     </table>
-   </div>
-   </div>
+<!-- Footer -->
+<div class="footer">
+  <p>All rights reserved © Cheylea Hopkinson 2025. Contact on <a href="https://www.linkedin.com/in/cheyleahopkinson/" target="_blank">LinkedIn</a>.</p>
+</div>
 
- </div>
- 
- <div class="footer">
-   <p>All rights reserved © Cheylea Hopkinson 2025. Contact on <a href="https://www.linkedin.com/in/cheyleahopkinson/" target="_blank">LinkedIn</a>.</p>
- </div>
-
- <script>
-   function closeWinPopup() {
-            document.getElementById("youWin").style.display = "none";
-        }
-        function closeLosePopup() {
-            document.getElementById("youLose").style.display = "none";
-        }
+<script>
+  function closeWinPopup() {
+    document.getElementById("youWin").style.display = "none";
+  }
+  function closeLosePopup() {
+    document.getElementById("youLose").style.display = "none";
+  }
   window.onload = function() {
     var won = {{ won | tojson }};
     var lost = {{ lost | tojson }};
@@ -158,9 +227,14 @@
         document.getElementById("youLose").style.display = "block";
         document.getElementById("guess-button").style.display = "none";
     }
-};
+  };
 
-   </script>
-
+  $(document).ready(function() {
+    $('#guessedcountry').select2({
+    placeholder: "-- pick a country to guess! -- ",
+    allowClear: true
+    });
+  });
+</script>
 </body>
 </html>

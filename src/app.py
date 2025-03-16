@@ -55,7 +55,7 @@ def get_user_game_data_today(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT CountryId, Distance, Direction, ComparedImageUrl FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ?", (unique_id, date.today()))
+    cursor.execute("SELECT CountryId, Distance, Direction, ComparedImageUrl FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC", (unique_id, date.today()))
     data = cursor.fetchall()
 
     conn.close()
@@ -111,21 +111,21 @@ def get_player_guess_stats(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT \
-                        UniqueId, \
-                        TotalGuesses, \
-                        COUNT(*) TotalGameCount \
-                    FROM \
-                    ( \
-                        SELECT \
-                            UniqueId, \
-                            GameId, \
-                            COUNT(*) AS TotalGuesses \
-                        FROM GameDetail \
-                        GROUP BY UniqueId, GameId \
-                        HAVING MIN(Distance) = 0 \
-                    ) \
-                    WHERE UniqueId = ?", (unique_id,))
+    cursor.execute("""SELECT 
+                        UniqueId, 
+                        TotalGuesses, 
+                        COUNT(*) TotalGameCount 
+                    FROM 
+                    ( 
+                        SELECT 
+                            UniqueId, 
+                            GameId, 
+                            COUNT(*) AS TotalGuesses 
+                        FROM GameDetail 
+                        GROUP BY UniqueId, GameId 
+                        HAVING MIN(Distance) = 0 
+                    ) 
+                    WHERE UniqueId = ?""", (unique_id,))
     data = cursor.fetchall()
 
     conn.close()
@@ -141,19 +141,20 @@ def get_player_average_guess_stats(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT \
-                        AVG(TotalGuesses) AS AverageGuesses\
-                    FROM\
-                    (\
-                        SELECT\
-                            UniqueId,\
-                            GameId,\
-                            COUNT(*) AS TotalGuesses\
-                        FROM GameDetail\
-                        GROUP BY UniqueId, GameId\
-                    )\
-                    WHERE UniqueId = ?\
-                    GROUP BY UniqueId", (unique_id,))
+    cursor.execute("""SELECT 
+                        AVG(TotalGuesses) AS AverageGuesses
+                    FROM
+                    (
+                        SELECT
+                            UniqueId,
+                            GameId,
+                            COUNT(*) AS TotalGuesses
+                        FROM GameDetail
+                        GROUP BY UniqueId, GameId
+                    )
+                    WHERE UniqueId = ?
+                    GROUP BY UniqueId""", (unique_id,))
+                   
     data = cursor.fetchone()
 
     conn.close()
@@ -169,22 +170,22 @@ def get_player_average_win_time(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT \
-                        ROUND(AVG(TimeTakenToFinishInMinutes),2) AS AverageWinTimeInMinutes\
-                    FROM\
-                    (\
-                        SELECT\
-                            UniqueId,\
-                            GameId,\
-                            MIN(DateTimeGuessed) AS StartTime,\
-                            MAX(DateTimeGuessed) AS EndTime,\
-                            (JULIANDAY(MAX(DateTimeGuessed)) - JULIANDAY(MIN(DateTimeGuessed))) * 24 * 60 AS TimeTakenToFinishInMinutes\
-                        FROM GameDetail\
-                        GROUP BY UniqueId, GameId\
-                        HAVING MIN(Distance) = 0\
-                    )\
-                    WHERE UniqueId = ?\
-                    GROUP BY UniqueId", (unique_id,))
+    cursor.execute("""SELECT 
+                        ROUND(AVG(TimeTakenToFinishInMinutes),2) AS AverageWinTimeInMinutes
+                    FROM
+                    (
+                        SELECT
+                            UniqueId,
+                            GameId,
+                            MIN(DateTimeGuessed) AS StartTime,
+                            MAX(DateTimeGuessed) AS EndTime,
+                            (JULIANDAY(MAX(DateTimeGuessed)) - JULIANDAY(MIN(DateTimeGuessed))) * 24 * 60 AS TimeTakenToFinishInMinutes
+                        FROM GameDetail
+                        GROUP BY UniqueId, GameId
+                        HAVING MIN(Distance) = 0
+                    )
+                    WHERE UniqueId = ?
+                    GROUP BY UniqueId""", (unique_id,))
     data = cursor.fetchone()
 
     conn.close()
@@ -248,6 +249,142 @@ def get_current_streak(conn, unique_id):
     conn.close()
 
     return data[0] if data else 0  # Return 0 if no streak found
+
+# 2. Get the average time to win for a user
+def get_max_streak(conn, unique_id):
+    """Get the user's max win streak.
+    
+    Key arguments
+    conn -- connection to the sqlite database
+    uniqueid -- unique id for a given user
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        WITH WinningGames AS (
+            SELECT 
+                UniqueId,
+                GameId,
+                MIN(Distance) AS ClosestDistance,
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+            FROM GameDetail
+            GROUP BY UniqueId, GameId
+            HAVING MIN(Distance) = 0 -- Only winning games
+        ),
+        RankedGames AS (
+            SELECT 
+                UniqueId,
+                GameId,
+                DayPlayed,
+                ROW_NUMBER() OVER (PARTITION BY UniqueId ORDER BY DayPlayed) 
+                - JULIANDAY(DayPlayed) AS StreakGroup
+            FROM WinningGames
+        ),
+        StreakCounts AS (
+            SELECT 
+                UniqueId,
+                StreakGroup,
+                COUNT(*) AS StreakLength
+            FROM RankedGames
+            GROUP BY UniqueId, StreakGroup
+        )
+        SELECT 
+            MAX(StreakLength) AS MaxWinStreak
+        FROM StreakCounts
+        WHERE UniqueId = ?
+        GROUP BY UniqueId;
+    """, (unique_id,))
+
+    data = cursor.fetchone()
+    conn.close()
+
+    return data[0] if data else 0  # Return 0 if no streak found
+
+# 2. Get the win rate
+def get_win_rate(conn, unique_id):
+    """Get the user's win rate.
+    
+    Key arguments
+    conn -- connection to the sqlite database
+    uniqueid -- unique id for a given user
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        WITH Wins AS (
+            SELECT 
+                UniqueId,
+                GameId,
+                MIN(Distance) AS ClosestDistance,
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+            FROM GameDetail
+            GROUP BY UniqueId, GameId
+            HAVING MIN(Distance) = 0
+        ),
+        Losses AS (
+            SELECT 
+                UniqueId,
+                GameId,
+                MIN(Distance) AS ClosestDistance,
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+            FROM GameDetail
+            GROUP BY UniqueId, GameId
+            HAVING MIN(Distance) <> 0
+        )
+        SELECT
+            COUNT(wins.GameId) / COUNT(wins.GameId) + COUNT(losses.GameId) AS WinRate
+        FROM Wins
+        LEFT JOIN Losses ON losses.UniqueId = wins.UniqueId
+        WHERE wins.UniqueId = ? OR losses.UniqueId
+        GROUP BY wins.UniqueId;
+    """, (unique_id,))
+
+    data = cursor.fetchone()
+    conn.close()
+
+    return data[0] if data else 0  # Return 0 if no streak found
+
+# 2. Get the total number of games played
+def get_total_played(conn, unique_id):
+    """Get the total numbers of games played
+    
+    Key arguments
+    conn -- connection to the sqlite database
+    uniqueid -- unique id for a given user
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            COUNT(DISTINCT GameId)
+        FROM GameDetail
+        WHERE UniqueId = ?;
+    """, (unique_id,))
+
+    data = cursor.fetchone()
+    conn.close()
+
+    return data[0] if data else 0  # Return 0 if no streak found
+
+# Get all of a users stats
+def get_all_stats(database, unique_id):
+    conn = sql.connect_to_database(database)
+    win_stats = get_player_guess_stats(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    average_win_time = get_player_average_win_time(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    current_streak = get_current_streak(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    average_win_guesses = get_player_average_guess_stats(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    average_win_guesses = get_player_average_guess_stats(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    max_streak = get_max_streak(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    win_rate = get_win_rate(conn, unique_id)
+    conn = sql.connect_to_database(database)
+    total_played = get_total_played(conn, unique_id)
+    return win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played
 
 # 3. Main
 # Function that runs upon initialisation.
@@ -345,18 +482,7 @@ def home():
     # Get any existing id for user
     user_id, response = get_unique_id()
     # Get any current win stats
-    conn = sql.connect_to_database(flaggle)
-    win_stats = get_player_guess_stats(conn, user_id)
-    conn.close()
-    conn = sql.connect_to_database(flaggle)
-    average_win_time = get_player_average_win_time(conn, user_id)
-    conn.close()
-    conn = sql.connect_to_database(flaggle)
-    current_streak = get_current_streak(conn, user_id)
-    conn.close()
-    conn = sql.connect_to_database(flaggle)
-    average_win_guesses = get_player_average_guess_stats(conn, user_id)
-    conn.close()
+    win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
     
     
     
@@ -395,40 +521,17 @@ def home():
     # Check player game conditions
     if any(x == 0 for x in guessed_distances) == True:
         has_player_won = 1
-        conn = sql.connect_to_database(flaggle)
-        win_stats = get_player_guess_stats(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        average_win_time = get_player_average_win_time(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        current_streak = get_current_streak(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        average_win_guesses = get_player_average_guess_stats(conn, user_id)
-        conn.close()
+        win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
+    
     else:
         has_player_won = 0
 
     if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
         has_player_lost = 1
-        conn = sql.connect_to_database(flaggle)
-        win_stats = get_player_guess_stats(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        average_win_time = get_player_average_win_time(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        current_streak = get_current_streak(conn, user_id)
-        conn.close()
-        conn = sql.connect_to_database(flaggle)
-        average_win_guesses = get_player_average_guess_stats(conn, user_id)
-        conn.close()
+        win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
+    
     else:
         has_player_lost = 0
-    
-    print(has_player_lost)
-    print(has_player_won)
 
     # Zip the lists together before passing to the template
     guesses = zip(guessed_image_path, guesses_country_name, guessed_distances, guessed_directions_image_path, image_url)
@@ -441,7 +544,7 @@ def home():
     # maybe review the colour processing
     # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
     # that plus making the website just look better in general
-
+    print(todayscountry)
     # Render the template normally
     rendered_template = render_template("index.html"
                            , country = todayscountry
@@ -452,7 +555,10 @@ def home():
                            , win_stats = win_stats
                            , average_win_time = average_win_time
                            , current_streak = current_streak
-                           , average_win_guesses = average_win_guesses)
+                           , average_win_guesses = average_win_guesses
+                           , max_streak = max_streak
+                           , win_rate = win_rate
+                           , total_played = total_played)
 
     if response:  
         # Set the response body to the rendered template
