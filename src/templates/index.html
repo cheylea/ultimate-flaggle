@@ -164,6 +164,7 @@
 <div class="row">
   <div class="column-left" ></div>
   <div class="column-mid">
+    
     <!--Generate countries -->
     <form action="{{ url_for('guesscountry') }}" method="post">
       <select id="guessedcountry" name="guessedcountry" style="width: 300px;">
@@ -175,6 +176,24 @@
       <!-- Guess button -->
         <input class="guessButton" id="guess-button" type="submit" value="GUESS!">
     </form>
+    <p>Possible Colours</p>
+    <p><div class="circle" style="background: #000000;"></div>
+      <div class="circle" style="background: #FFFFFF;"></div>
+      <div class="circle" style="background: #CE2424;"></div>
+      <div class="circle" style="background: #D0103A;"></div>
+      <div class="circle" style="background: #007934;"></div>
+      <div class="circle" style="background: #9216A0;"></div>
+      <div class="circle" style="background: #0F41A3;"></div>
+      <div class="circle" style="background: #00AFCA;"></div>
+      <div class="circle" style="background: #8CB9DA;"></div>
+      <div class="circle" style="background: #DECDB6;"></div>
+      <div class="circle" style="background: #FAF341;"></div>
+      <div class="circle" style="background: #EACB3F;"></div>
+      <div class="circle" style="background: #ff8000;"></div>
+      <div class="circle" style="background: #61362E;"></div>
+      <div class="circle" style="background: #a0a0a0;"></div>
+      <div class="circle" style="background: #F48E93;"></div>
+    </p>
   </div>
 </div>
 
@@ -192,11 +211,11 @@
        </tr>
        {% for flag, country, distance, direction, image in guesses %}
        <tr>
-          <td><img src="{{ flag }}" style="max-width: 100%; height: auto;"></td>
+          <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"></td>
            <td>{{ country }}</td>
            <td>{{ distance }}</td>
            <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
-           <td><img src="{{ image }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer; max-width: 100%; height: auto;"></td>
+           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
        </tr>
        {% endfor %}
     </table>

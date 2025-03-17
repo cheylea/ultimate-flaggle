@@ -191,6 +191,15 @@ Contents
     top:1px;
   }
 
+  .circle {
+    border-radius: 50%;
+    width: calc(30% / 16);
+    float: left;
+    position: relative;
+    left: 20%;
+    padding: calc(30% / 16);
+  }
+
 /* 4. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .footer {
