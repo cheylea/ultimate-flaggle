@@ -63,25 +63,26 @@
         This version of flaggle works by combining the approachs of <a href="https://flagle.gg/" target="_blank">FLAGLE</a> and <a href="https://www.flaggle.net/" target="_blank">Flaggle</a>.
         You guess a country and are shown hints for how close you are to the country to guess. Hints are the distance, direction and flag colour comparison.
         The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.
-        Please note, flags have been "cleaned" to be the same dimensions and a set of 17 colour shades so may not look exactly identical to the original flag.
+        Please note, flags have been "cleaned" to be the same dimensions and a set of 16 colour shades so may not look exactly identical to the original flag.
       </p>
       <br>
       <p> Colours used to process flags:</p>
       <br>
       <p><div class="circle" style="background: #000000;"></div>
         <div class="circle" style="background: #FFFFFF;"></div>
-        <div class="circle" style="background: #FF0000;"></div>
         <div class="circle" style="background: #CE2424;"></div>
-        <div class="circle" style="background: #22861E;"></div>
-        <div class="circle" style="background: #2D9E4E;"></div>
+        <div class="circle" style="background: #D0103A;"></div>
+        <div class="circle" style="background: #007934;"></div>
         <div class="circle" style="background: #9216A0;"></div>
         <div class="circle" style="background: #0F41A3;"></div>
-        <div class="circle" style="background: #0F2383;"></div>
+        <div class="circle" style="background: #00AFCA;"></div>
         <div class="circle" style="background: #8CB9DA;"></div>
         <div class="circle" style="background: #DECDB6;"></div>
         <div class="circle" style="background: #FAF341;"></div>
         <div class="circle" style="background: #EACB3F;"></div>
+        <div class="circle" style="background: #ff8000;"></div>
         <div class="circle" style="background: #61362E;"></div>
+        <div class="circle" style="background: #a0a0a0;"></div>
         <div class="circle" style="background: #F48E93;"></div>
       </p>
     </div>
@@ -195,7 +196,7 @@
            <td>{{ country }}</td>
            <td>{{ distance }}</td>
            <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
-           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
+           <td><img src="{{ image }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer; max-width: 100%; height: auto;"></td>
        </tr>
        {% endfor %}
     </table>
@@ -229,12 +230,25 @@
     }
   };
 
+  function changeImageOnHover(element) {
+            let currentSrc = element.src;
+            element.dataset.originalSrc = currentSrc; // Store original src
+            element.src = currentSrc.includes("cleaned_flags") 
+                ? currentSrc.replace("cleaned_flags", "flags") 
+                : currentSrc.replace("flags", "cleaned_flags");
+        }
+
+        function revertImage(element) {
+            element.src = element.dataset.originalSrc; // Restore original src
+        }
+
   $(document).ready(function() {
     $('#guessedcountry').select2({
     placeholder: "-- pick a country to guess! -- ",
     allowClear: true
     });
   });
+  
 </script>
 </body>
 </html>

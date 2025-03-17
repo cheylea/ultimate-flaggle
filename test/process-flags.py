@@ -13,11 +13,11 @@ import pandas as pd
 # Script used to loop through each flag to process it for comparing
 
 # Get the list of the country codes
-locations = pd.read_csv('static\country latitude and longitude.csv')
+locations = pd.read_csv('src\static\country latitude and longitude.csv')
 
 # Run through each country code
 for x in range(0, len(locations)):
-    imagepath = 'static/images/flags/FLAG.png'
+    imagepath = 'src/static/images/flags/FLAG.png'
     flag = locations.at[x, 'country']
     flag_path = imagepath.replace("FLAG",str(flag).lower()) # update image url to country code
     
@@ -28,4 +28,3 @@ for x in range(0, len(locations)):
     except Exception as str_error:
         print(str(x) + " not there.") # fail
         pass
-        

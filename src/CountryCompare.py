@@ -80,13 +80,12 @@ class CountryCompare:
         #reference: https://sethsara.medium.com/change-pixel-colors-of-an-image-to-nearest-solid-color-with-python-and-opencv-33f7d6e6e20d
         colours = [(0, 0, 0) # black 
                   ,(255, 255, 255) # white
-                  ,(255, 0, 0) # red
                   ,(206, 36, 36) # dark red
-                  ,(34, 134, 30) # green
-                  ,(45, 158, 78) # light green
+                  ,(208, 16, 58) # red pink
+                  ,(0, 121, 52) # green
                   ,(146, 22, 160) # purple
                   ,(15, 65, 163) # blue
-                  ,(15, 35, 131) # dark blue
+                  ,(0, 175, 202) # bright blue
                   ,(140, 185, 218) # light blue
                   ,(222, 205, 182) # cream
                   ,(250, 243, 65) # yellow
