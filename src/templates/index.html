@@ -31,23 +31,105 @@
 <!-- Popup icons for how to play and view current stats -->
 <div class="row">
   <div class="column-left" ></div>
-  <div class="column-mid" style="border-radius:  15px 15px 0px 0px;">
+  <div class="column-mid">
     <!-- How to button -->
-    <header style="background-color:#E9F1F7;color:#231651;">
-      <span onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#10067;</span>
+    <header style="background-color:#E9F1F7;">
+      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#10067;</span>
     </header>
     <!-- Stats button -->
-    <header style="background-color:#E9F1F7;color:#231651;">
-      <span onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#128202;</span>
+    <header style="background-color:#E9F1F7;">
+      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('myStats').style.display='block'" class="how-to topright">&#128202;</span>
     </header>
-  </div>
-  <div class="column-left" ></div>
-</div>
+    <br>
+    <br>
+    
+    <!--Generate countries -->
+    <form action="{{ url_for('guesscountry') }}" method="post">
+      <select id="guessedcountry" name="guessedcountry" style="width: 300px;">
+          <option disabled selected value> -- pick a country to guess! -- </option>
+          {% for country in countries %}
+          <option value="{{ country }}">{{ country }}</option>
+          {% endfor %}
+      </select>
+    
+      <!-- Guess button -->
+      <input class="guessButton" id="guess-button" type="submit" value="GUESS!">
+    </form>
 
-<!-- Various popups that may display -->
-<div class="row">
-  <div class="column-left" ></div>
-  <div class="column-mid">
+    <!-- Display possible colours-->
+    <br>
+    <p><div class="circle" style="background: #000000;"></div>
+      <div class="circle-main" style="background: #FFFFFF;"></div>
+      <div class="circle-main" style="background: #CE2424;"></div>
+      <div class="circle-main" style="background: #D0103A;"></div>
+      <div class="circle-main" style="background: #007934;"></div>
+      <div class="circle-main" style="background: #9216A0;"></div>
+      <div class="circle-main" style="background: #0F41A3;"></div>
+      <div class="circle-main" style="background: #00AFCA;"></div>
+      <div class="circle-main" style="background: #8CB9DA;"></div>
+      <div class="circle-main" style="background: #DECDB6;"></div>
+      <div class="circle-main" style="background: #FAF341;"></div>
+      <div class="circle-main" style="background: #EACB3F;"></div>
+      <div class="circle-main" style="background: #ff8000;"></div>
+      <div class="circle-main" style="background: #61362E;"></div>
+      <div class="circle-main" style="background: #a0a0a0;"></div>
+      <div class="circle-main" style="background: #F48E93;"></div>
+    </p>
+    <br>
+    <br>
+    <table class="myTable" style="border-radius:  15px 15px 15px 15px;">
+      <tr>
+          <th>Flag</th>
+          <th>Country</th>
+          <th>Distance</th>
+          <th>Direction</th>
+          <th>Difference</th>
+      </tr>
+      {% for flag, country, distance, direction, image in guesses %}
+      <tr>
+         <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"></td>
+          <td>{{ country }}</td>
+          <td>{{ distance }}</td>
+          <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
+          <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br>
+   <!--Hidden pop ups-->
+    <!-- Current Stats -->
+    <div class="howToPopup" id="myStats" style="display: none;">
+      <!-- Close button in the top right -->
+      <header style="background-color:#E9F1F7;color:#231651;">
+        <span onclick="document.getElementById('myStats').style.display='none'" class="close-button topright">&times;</span>
+      </header>
+      <!-- Stats -->
+      <table class="statsTable">
+        <tr>
+            <th>Win Streak</th>
+            <th>Average Guesses</th>
+            <th>Average Minutes</th>
+        </tr>
+        <tr>
+           <td>{{current_streak}}</td>
+            <td>{{ average_win_guesses }}</td>
+            <td>{{ average_win_time }}</td>
+        </tr>
+      </table>
+      <table class="statsTable">
+        <tr>
+            <th>Max Streak</th>
+            <th>Win Rate</th>
+            <th>Total Played</th>
+        </tr>
+        <tr>
+            <td>{{ max_streak }}</td>
+            <td>{{ win_rate }}</td>
+            <td>{{ total_played }}</td>
+        </tr>
+      </table>
+      <p>See stats below</p>
+    </div>
     <!-- How to pop up -->
     <div class="howToPopup" id="howToPopup">
       <!-- Close button in the top right -->
@@ -121,8 +203,8 @@
       </table>
       <p>See stats below</p>
     </div>
-    
-    <!-- Winning pop up -->
+  
+    <!-- Losing pop up -->
     <div class="howToPopup" id="youLose" style="display: none;">
       <!-- Close button in the top right -->
       <header style="background-color:#E9F1F7;color:#231651;">
@@ -157,69 +239,7 @@
       <p>See stats below</p>
     </div>
   </div>
-</div>
-
-
-<!-- Countries to select and guess on the page -->
-<div class="row">
   <div class="column-left" ></div>
-  <div class="column-mid">
-    
-    <!--Generate countries -->
-    <form action="{{ url_for('guesscountry') }}" method="post">
-      <select id="guessedcountry" name="guessedcountry" style="width: 300px;">
-          <option disabled selected value> -- pick a country to guess! -- </option>
-          {% for country in countries %}
-          <option value="{{ country }}">{{ country }}</option>
-          {% endfor %}
-      </select>
-      <!-- Guess button -->
-        <input class="guessButton" id="guess-button" type="submit" value="GUESS!">
-    </form>
-    <p>Possible Colours</p>
-    <p><div class="circle" style="background: #000000;"></div>
-      <div class="circle" style="background: #FFFFFF;"></div>
-      <div class="circle" style="background: #CE2424;"></div>
-      <div class="circle" style="background: #D0103A;"></div>
-      <div class="circle" style="background: #007934;"></div>
-      <div class="circle" style="background: #9216A0;"></div>
-      <div class="circle" style="background: #0F41A3;"></div>
-      <div class="circle" style="background: #00AFCA;"></div>
-      <div class="circle" style="background: #8CB9DA;"></div>
-      <div class="circle" style="background: #DECDB6;"></div>
-      <div class="circle" style="background: #FAF341;"></div>
-      <div class="circle" style="background: #EACB3F;"></div>
-      <div class="circle" style="background: #ff8000;"></div>
-      <div class="circle" style="background: #61362E;"></div>
-      <div class="circle" style="background: #a0a0a0;"></div>
-      <div class="circle" style="background: #F48E93;"></div>
-    </p>
-  </div>
-</div>
-
-<!-- Display results in the page -->
-<div class="row">
-  <div class="column-left" ></div>
-  <div class="column-mid" style="border-radius:  0px 0px 15px 15px;">
-    <table class="myTable" style="border-radius:  15px 15px 15px 15px;">
-       <tr>
-           <th>Flag</th>
-           <th>Country</th>
-           <th>Distance</th>
-           <th>Direction</th>
-           <th>Difference</th>
-       </tr>
-       {% for flag, country, distance, direction, image in guesses %}
-       <tr>
-          <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"></td>
-           <td>{{ country }}</td>
-           <td>{{ distance }}</td>
-           <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
-           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
-       </tr>
-       {% endfor %}
-    </table>
-  </div>
 </div>
 
 <!-- Footer -->

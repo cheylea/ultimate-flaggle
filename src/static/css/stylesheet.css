@@ -19,16 +19,15 @@ Contents
     flex-direction: column;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
-    background-image: url("/static//images/water.jpg");
-    background-color: rgba(101, 169, 226, 1);
-    background-blend-mode: overlay;
-    
+    background-image: url("/static//images/ocean.png");
+    background-position: top;
   }
 
 /* 2. Header
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .header {
     padding: 30px;
+    padding-bottom: 40px;
     text-align: center;
     font-size: 35px;
     color: #E9F1F7;
@@ -39,17 +38,20 @@ Contents
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .column-left {
     float: left;
-    width: 20%;
+    width: 15%;
     padding: 10px;
     text-align: center;
   }
 
   .column-mid {
     float: left;
-    width: 60%;
-    padding: 10px;
+    width: 70%;
+    padding: 20px;
     text-align: center;
     background-color:#9AE05C;
+    background-image: url("/static//images/grass.png");
+    border-radius: 15px 15px 15px 15px;
+    box-shadow: 0 0 30px #ffffff;
   }
 
   .column-mid .how-to{
@@ -80,6 +82,7 @@ Contents
     text-align: center;
     table-layout: fixed;
     width: 100%;
+    margin-top: 15px;
   }
 
   table.myTable td, table.myTable th {
@@ -171,27 +174,27 @@ Contents
   }
 
   .guessButton {
-    box-shadow:inset 3px 4px 0px 0px #00B058;
-    background-color:#00D26A;
+    box-shadow:inset 3px 4px 0px 0px #c12724;
+    background-color:#F8312F;
     border-radius:15px;
-    border:1px solid #00B058;
+    border:1px solid #601412;
     cursor:pointer;
     color:#ffffff;
     font-family:Arial;
     font-weight:bold;
     padding:8px 16px;
     text-decoration:none;
-    text-shadow:0px 1px 0px #2f6627;
+    text-shadow:0px 1px 0px #601412;;
   }
   .guessButton:hover {
-    background-color:#3FFF9F;
+    background-color:#fb615f;
   }
   .guessButton:active {
     position:relative;
     top:1px;
   }
 
-  .circle {
+  .circle-main {
     border-radius: 50%;
     width: calc(30% / 16);
     float: left;
