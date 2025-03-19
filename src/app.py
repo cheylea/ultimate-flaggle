@@ -366,6 +366,16 @@ def get_total_played(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
+def get_chart_labels_values(win_stats):
+    labels = [1, 2, 3, 4, 5, 6]
+    if win_stats == None:
+        values = [0, 0, 0, 0, 0, 0]
+    else:
+        stats_dict = {win_stats[0][1]:win_stats[0][2] for win_stats[0] in win_stats}
+        values = [stats_dict.get(x, 0) for x in labels]
+
+    return labels, values
+
 # Get all of a users stats
 def get_all_stats(database, unique_id):
     conn = sql.connect_to_database(database)
@@ -385,6 +395,7 @@ def get_all_stats(database, unique_id):
     conn = sql.connect_to_database(database)
     total_played = get_total_played(conn, unique_id)
     return win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played
+
 
 # 3. Main
 # Function that runs upon initialisation.
@@ -484,7 +495,7 @@ def home():
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
     
-    
+    labels, values = get_chart_labels_values(win_stats)
     
     ### Display any guessed countries for the user
     # Fetch todays game data
@@ -522,14 +533,14 @@ def home():
     if any(x == 0 for x in guessed_distances) == True:
         has_player_won = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
-    
+        labels, values = get_chart_labels_values(win_stats)
     else:
         has_player_won = 0
 
     if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
         has_player_lost = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
-    
+        labels, values = get_chart_labels_values(win_stats)
     else:
         has_player_lost = 0
 
@@ -558,7 +569,9 @@ def home():
                            , average_win_guesses = average_win_guesses
                            , max_streak = max_streak
                            , win_rate = win_rate
-                           , total_played = total_played)
+                           , total_played = total_played
+                           , labels = labels
+                           , values = values)
 
     if response:  
         # Set the response body to the rendered template

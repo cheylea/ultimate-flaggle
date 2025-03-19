@@ -18,7 +18,7 @@ Contents
     display: flex;
     flex-direction: column;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     background-image: url("/static//images/ocean.png");
     background-position: top;
   }
@@ -38,15 +38,15 @@ Contents
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .column-left {
     float: left;
-    width: 15%;
+    width: 5%;
     padding: 10px;
     text-align: center;
   }
 
   .column-mid {
     float: left;
-    width: 70%;
-    padding: 20px;
+    width: 90%;
+    padding: 2%;
     text-align: center;
     background-color:#9AE05C;
     background-image: url("/static//images/grass.png");
@@ -82,7 +82,8 @@ Contents
     text-align: center;
     table-layout: fixed;
     width: 100%;
-    margin-top: 3%;
+    margin-top: 15px;
+    font-size: 11px;
   }
 
   table.myTable td, table.myTable th {
@@ -184,7 +185,8 @@ Contents
     font-weight:bold;
     padding:8px 16px;
     text-decoration:none;
-    text-shadow:0px 1px 0px #601412;;
+    text-shadow:0px 1px 0px #601412;
+    max-width: 200px;
   }
   .guessButton:hover {
     background-color:#fb615f;
@@ -196,14 +198,14 @@ Contents
 
   .circle-main {
     border-radius: 50%;
-    margin: 0.9%;
+    margin: 0.5%;
     float: left;
     position: relative;
-    padding: calc(70% / 32);
+    padding: calc(84% / 32);
   }
 
   .select {
-    width: 300px;
+    width: 60%;
   }
 
 /* 4. Footer
@@ -215,7 +217,7 @@ Contents
     margin-top: auto;
     font-weight: bolder;
     color: #ffffff;
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .footer a {
