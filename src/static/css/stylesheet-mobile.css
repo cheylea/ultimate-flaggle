@@ -87,7 +87,7 @@ Contents
   }
 
   table.myTable td, table.myTable th {
-    padding: 6px 10px;
+    padding: 6px 6px;
   }
 
   table.myTable thead {
@@ -123,11 +123,11 @@ Contents
 
   .howToPopup {
     display: none;
-    width: 50%;
+    width: 70%;
     max-width: 500px;
     background-color: #E9F1F7;
     position: absolute;
-    top: 50%;
+    top: 35%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
