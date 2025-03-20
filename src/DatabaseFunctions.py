@@ -16,7 +16,6 @@ class DatabaseFunctions:
         """
         conn = sqlite3.connect(database_file, isolation_level=None)
         conn.row_factory = sqlite3.Row
-        print("Connection successful!")
         return conn
 
     # Execute SQL
