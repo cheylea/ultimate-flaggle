@@ -16,7 +16,6 @@ app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "70656E6E79616E64626173696C" # Required for session
 
 # Setup for identifying unique user id and using cookies
-from Cookies import Cookies as cookie
 import uuid
 
 # Import custom functions
