@@ -442,18 +442,18 @@ def main():
                             ); """
     
     # Make connection to flaggle database file
-    conn = sql.connect_to_database(flaggle)
-    if conn is not None:
-        # Execute required sql
-        sql.execute_sql(conn, drop_table_answer)
-        sql.execute_sql(conn, create_table_answer)
-        sql.execute_sql(conn, drop_table_games_detail)
-        sql.execute_sql(conn, create_table_games_detail)
-        
-        print("Database initialised.")
-        
-    else:
-        print("Error, no connection.")
+    #conn = sql.connect_to_database(flaggle)
+    #if conn is not None:
+    #    # Execute required sql
+    #    sql.execute_sql(conn, drop_table_answer)
+    #    sql.execute_sql(conn, create_table_answer)
+    #    sql.execute_sql(conn, drop_table_games_detail)
+    #    sql.execute_sql(conn, create_table_games_detail)
+    #    
+    #    print("Database initialised.")
+    #    
+    #else:
+    #    print("Error, no connection.")
 
     
     # Get details about the locations
@@ -497,7 +497,7 @@ def home():
     todayscountryurl = "/static//images/cleaned_flags/" + str(todayscountryid).lower() + ".png"
     # Get any existing id for user
     user_id, response = get_unique_id()
-    print(user_id)
+
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
     
