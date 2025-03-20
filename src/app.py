@@ -21,10 +21,15 @@ import uuid
 
 # Import custom functions
 import cv2 # Required for using country compare
-from CountryCompare import CountryCompare as cc # Import all functions from country compare
-import sqlite3 # Required for using Database Functions
-from DatabaseFunctions import DatabaseFunctions as sql # Import all SQLite connections functions
-from DateChecks import DateChecks as dc # Import all functions for date comparison
+# Import all functions from country compare
+### Imports
+import numpy as np
+from geographiclib.geodesic import Geodesic as geo
+import cv2
+import scipy.spatial as sp
+from PIL import Image
+# Required for using Database Functions
+import sqlite3
 #--------------------------------------------------
 
 ##### F U N C T I O N S #####----------------------
@@ -47,7 +52,7 @@ from DateChecks import DateChecks as dc # Import all functions for date comparis
 def get_unique_id():
     """Get or create a unique ID for tracking depending on cookie consent."""
     unique_id = request.cookies.get("unique_id")
-    consent_status = cookie.check_consent()
+    consent_status = check_consent()
 
     # Generate a unique_id if there isn't one
     if unique_id is None:
@@ -396,23 +401,236 @@ def get_chart_labels_values(win_stats):
 
 # 13. Get all of a users stats
 def get_all_stats(database, unique_id):
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     win_stats = get_player_guess_stats(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     average_win_time = get_player_average_win_time(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     current_streak = get_current_streak(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     average_win_guesses = get_player_average_guess_stats(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     average_win_guesses = get_player_average_guess_stats(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     max_streak = get_max_streak(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     win_rate = get_win_rate(conn, unique_id)
-    conn = sql.connect_to_database(database)
+    conn = connect_to_database(database)
     total_played = get_total_played(conn, unique_id)
     return win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played
+
+# 14. Cookies functions
+def accept_cookies():
+    """Function to accept cookies."""
+    consent_given = True
+    session['cookie-consents'] = True
+    return consent_given
+
+def reject_cookies():
+    """Function to reject cookies."""
+    consent_given = False
+    session['cookie-consents'] = False
+    return consent_given
+
+def check_consent():
+    """Function to check the current consent status."""
+    consent = session.get('cookie-consents')
+    return consent
+
+# 15. Date Checks
+
+# Function to check if we need to shuffle the list of countries
+def checkShuffle(last_shuffled_date, locations):
+    """Check if out of a list if we need to reshuffle the list
+    Returns a trust false for whether or not it needs to be
+    reshuffled.
+    Key arguments
+    last_shuffled_date -- when the list was last shuffled
+    locations -- list of items to shuffle
+    """
+    today = date.today()
+    # If it has been 244 days since the last shuffle we shuffle again
+    # This is to avoid cycling through the same order of countries over and over
+    if last_shuffled_date > today + dt.timedelta(days=len(locations)):
+        return 1
+    else:
+        return 0
+
+# Function to check if the player is viewing this on a new day
+def is_new_day(last_played):
+    """Check if the last played date is different from today.
+    
+    Key arguments
+    last_played -- when the user last played the game
+    """
+    today = dt.date.today().isoformat()
+    return last_played != today
+
+# 16. Database functions
+
+# Create database connection
+def connect_to_database(database_file):
+    """Connect to a sqlite database
+
+    Key arguments
+    database_file -- location of sqlite database file
+    """
+    conn = sqlite3.connect(database_file, isolation_level=None)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Execute SQL
+def execute_sql(conn, sql):
+    """Execute SQL to a sqlite database
+
+    Key arguments
+    conn -- sqlite connection
+    sql -- string of sqlite code
+    """
+    c = conn.cursor()
+    c.execute(sql)
+
+# Execute SQL and fetch one result
+def execute_sql_fetch_one(conn, sql):
+    """Execute SQL to a sqlite database
+
+    and fetch answer (one answer only)
+    Key arguments
+    conn -- sqlite connection
+    sql -- select string of sqlite code
+    """
+    c = conn.cursor()
+    c.execute(sql)
+    result = c.fetchone()
+    return result
+
+# Execute SQL and fetch all results
+def execute_sql_fetch_all(conn, sql):
+    """Execute SQL to a sqlite database
+
+    and fetch all answers (multiple answers only)
+    Key arguments
+    conn -- sqlite connection
+    sql -- select string of sqlite code
+    """
+    c = conn.cursor()
+    c.execute(sql)
+    result = c.fetchall()
+    return result
+
+# 17. Country Compare
+# Function for cross references colours for two cleaned flags
+def match_colours(image1, image2):
+    """Compare two flags and show the difference between them
+
+    Key arguments
+    image1 -- first image that uses cv2.imread on an image file
+    image2 -- comparison image that uses cv2.imread on an image file
+    """
+    # Check if images are the same initially
+    if image1.shape != image2.shape:
+        match = True
+    else:
+        match = False
+
+    # Compare images pixel by pixel and calculate the absolute difference between each pixel
+    difference = np.subtract(image1, image2)
+    abs_difference = np.abs(difference)
+    abs_difference_sum = np.sum(abs_difference, axis=2)
+
+    # Set a threshold of zero and create a mask for above and below the threshold
+    threshold = 0
+    mask_match = abs_difference_sum <= threshold
+    mask_no_match = abs_difference_sum > threshold
+    green = [0, 255, 0]
+    black = [0, 0, 0]
+
+    # Set matches to green and no matches to black
+    difference[mask_no_match] = black
+    difference[mask_match] = green
+        
+    # Calculate the percentage difference between the flags
+    calc_match = np.sum(mask_match) / (np.sum(mask_match) + np.sum(mask_no_match)) * 100
+    perc_match = "{:.2f}%".format(calc_match)
+
+    # Return result
+    return match, difference, perc_match
+    
+def check_distance(coord1, coord2):
+    """Compare two sets of lat-long coordinates and return the distance and direction between them
+
+    Key arguments
+    coord1 -- first set of coordinates eg. 42.546245,1.601554
+    coord2 -- second set of coordinates to compare to, eg. 42.546245,1.601554
+    """
+
+    # Use geo to get the distance and bearing based on the latitude and longitude coordinates
+    compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
+    distance = compare['s12']
+    bearing = compare['azi1']
+
+    # Create list of cardinals
+    cardinals = ["north", "north east", "east", "south east", "south", "south west", "west", "north west"]
+    # Adjust bearing 
+    bearing += 22.5
+    bearing = bearing % 360
+
+    # Convert bearing to index of the list
+    bearing = int(bearing / 45) # values 0 to 7
+    direction = cardinals [bearing]
+
+    return distance, compare['azi1'], bearing, direction
+
+def process_flags(imagepath):
+    """Change flag to specific colour palette
+
+    Key arguments
+    imagepath -- path for image to change
+    """
+    # reference: https://sethsara.medium.com/change-pixel-colors-of-an-image-to-nearest-solid-color-with-python-and-opencv-33f7d6e6e20d
+    colours = [(0, 0, 0) # black 
+              ,(255, 255, 255) # white
+              ,(206, 36, 36) # dark red
+              ,(208, 16, 58) # red pink
+              ,(0, 121, 52) # green
+              ,(146, 22, 160) # purple
+              ,(15, 65, 163) # blue
+              ,(0, 175, 202) # bright blue
+              ,(140, 185, 218) # light blue
+              ,(222, 205, 182) # cream
+              ,(250, 243, 65) # yellow
+              ,(234, 203, 63) # gold
+              ,(255, 128, 0) # orange
+              ,(97, 54, 46) # brown
+              ,(160, 160, 160) # grey
+              ,(244, 142, 147) # pink
+              ] 
+        
+    image = cv2.imread(imagepath)
+    # convert BGR to RGB image
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    h,w,bpp = np.shape(image)
+
+    # Change colors of each pixel
+    # reference :https://stackoverflow.com/a/48884514/9799700
+    for py in range(0,h):
+        for px in range(0,w):
+          
+          #Used this part to find nearest color 
+          #reference : https://stackoverflow.com/a/22478139/9799700
+          input_color = (image[py][px][0],image[py][px][1],image[py][px][2])
+          tree = sp.KDTree(colours) 
+          ditsance, result = tree.query(input_color) 
+          nearest_color = colours[result]
+
+          image[py][px][0]=nearest_color[0]
+          image[py][px][1]=nearest_color[1]
+          image[py][px][2]=nearest_color[2]
+    
+    image = Image.fromarray(image)
+    image = image.resize((800,530))
+    image.save(imagepath.replace("flags","cleaned_flags"))
 
 
 # 14. Main
@@ -456,13 +674,13 @@ def main():
                             ); """
     
     # Make connection to flaggle database file
-    #conn = sql.connect_to_database(flaggle)
+    #conn = connect_to_database(flaggle)
     #if conn is not None:
     #    # Execute required sql
-    #    sql.execute_sql(conn, drop_table_answer)
-    #    sql.execute_sql(conn, create_table_answer)
-    #    sql.execute_sql(conn, drop_table_games_detail)
-    #    sql.execute_sql(conn, create_table_games_detail)
+    #    execute_sql(conn, drop_table_answer)
+    #    execute_sql(conn, create_table_answer)
+    #    execute_sql(conn, drop_table_games_detail)
+    #    execute_sql(conn, create_table_games_detail)
     #    
     #    print("Database initialised.")
     #    
@@ -499,7 +717,7 @@ def home():
     global country_index
     today = date.today()
     # When page is loaded, checks if we need to reshuffle the list
-    check_shuffle = dc.checkShuffle(lastshuffled, locations)
+    check_shuffle = checkShuffle(lastshuffled, locations)
     # If we do, then shuffle the countries
     if check_shuffle == 1:
         r.shuffle(countries)
@@ -522,11 +740,11 @@ def home():
     
     ### Display any guessed countries for the user
     # Fetch todays game data
-    conn = sql.connect_to_database(flaggle)
+    conn = connect_to_database(flaggle)
     user_today_data = get_user_game_data_today(conn, user_id)
     conn.close()
     # Fetch id for last game played
-    conn = sql.connect_to_database(flaggle)
+    conn = connect_to_database(flaggle)
     game_id = get_user_last_game_id(conn, user_id)
     conn.close()
     game_id = game_id[0]
@@ -636,7 +854,7 @@ def guesscountry():
     coord1 = [guessedcountrylat, guessedcountrylong]
     coord2 = [todayscountrylat, todayscountrylong]
 
-    distance_compare_result = cc.check_distance(coord1, coord2)
+    distance_compare_result = check_distance(coord1, coord2)
 
     distance = distance_compare_result[0]
     direction = distance_compare_result[3]
@@ -648,13 +866,13 @@ def guesscountry():
     image2 = cv2.imread(answer_path)
 
     # Match colours and save resulting image
-    image_result = cc.match_colours(image1, image2)
+    image_result = match_colours(image1, image2)
     cv2.imwrite("src/static/guesses/output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png", image_result[1])
     guessed_image_result_path = "/static//guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
 
     # Store Results in Database
     try:
-        conn = sql.connect_to_database(flaggle)
+        conn = connect_to_database(flaggle)
         insert_game_guess(conn, user_id, game_id, guessedcountryid, distance, direction, guessed_image_result_path)
         conn.close()
     except:
@@ -666,14 +884,14 @@ def guesscountry():
 @app.route("/accept", methods=["GET"])
 def accept():
     # Run accept cookies function
-    cookie.accept_cookies()
+    accept_cookies()
     return redirect("/")
 
 # 4. Reject Cookies
 @app.route("/reject", methods=["GET"])
 def reject():
     # Run reject cookies function
-    cookie.reject_cookies()
+    reject_cookies()
     return redirect("/")
 
 #--------------------------------------------------
