@@ -20,27 +20,28 @@ import uuid
 
 # Import custom functions
 import cv2 # Required for using country compare
+
 # Import all functions from country compare
-### Imports
 import numpy as np
 from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
+
 # Required for using Database Functions
 import sqlite3
 #--------------------------------------------------
 
 ##### F U N C T I O N S #####----------------------
-# 1. User UniqueId generation
-# 2. Get the users game data
-# 3. Get the users last game id
-# 4. Insert game guess
-# 5. Get the users total guess counts over time
-# 6. Get the average guesses on winning games for a user
-# 7. Get the average time to win for a user
-# 8. Get the users current win streak
-# 9. Get the user's max win streak
+# 1.  User UniqueId generation
+# 2.  Get the users game data
+# 3.  Get the users last game id
+# 4.  Insert game guess
+# 5.  Get the users total guess counts over time
+# 6.  Get the average guesses on winning games for a user
+# 7.  Get the average time to win for a user
+# 8.  Get the users current win streak
+# 9.  Get the user's max win streak
 # 10. Get the win rate
 # 11. Get the total number of games played
 # 12. Get values for the one screen stats chart
