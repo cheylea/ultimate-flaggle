@@ -30,17 +30,30 @@ from DateChecks import DateChecks as dc # Import all functions for date comparis
 ##### F U N C T I O N S #####----------------------
 # 1. User UniqueId generation
 # 2. Get the users game data
-# 3. Main
+# 3. Get the users last game id
+# 4. Insert game guess
+# 5. Get the users total guess counts over time
+# 6. Get the average guesses on winning games for a user
+# 7. Get the average time to win for a user
+# 8. Get the users current win streak
+# 9. Get the user's max win streak
+# 10. Get the win rate
+# 11. Get the total number of games played
+# 12. Get values for the one screen stats chart
+# 13. Get all of a users stats
+# 14. Main
 
 # 1. User UniqueId generation 
 def get_unique_id():
-    """Get or create a unique ID for tracking."""
+    """Get or create a unique ID for tracking depending on cookie consent."""
     unique_id = request.cookies.get("unique_id")
     consent_status = cookie.check_consent()
 
+    # Generate a unique_id if there isn't one
     if unique_id is None:
         unique_id = str(uuid.uuid4())
 
+    # Set cookie if allowed
     if consent_status is True:
         # Create a response and set the cookie
         response = make_response(unique_id)
@@ -65,7 +78,7 @@ def get_user_game_data_today(conn, unique_id):
     conn.close()
     return data
 
-# 2. Get the users game data from today
+# 3. Get the users last game id
 def get_user_last_game_id(conn, unique_id):
     """Fetch the gameid last stored for the user
     
@@ -81,7 +94,7 @@ def get_user_last_game_id(conn, unique_id):
     conn.close()
     return data
 
-# 2. Insert game guess
+# 4. Insert game guess
 def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction, image_url):
     """Insert the latest game guess
     
@@ -105,7 +118,7 @@ def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction,
     conn.commit()
     cursor.close()
 
-# 2. Get the users total guess counts over time
+# 5. Get the users total guess counts over time
 def get_player_guess_stats(conn, unique_id):
     """Get the users guess stats of all time
     
@@ -135,7 +148,7 @@ def get_player_guess_stats(conn, unique_id):
     conn.close()
     return data
 
-# 2. Get the average guesses on winning games for a user
+# 6. Get the average guesses on winning games for a user
 def get_player_average_guess_stats(conn, unique_id):
     """Get the users average number of gueeses
     
@@ -164,7 +177,7 @@ def get_player_average_guess_stats(conn, unique_id):
     conn.close()
     return data[0] if data else 0
 
-# 2. Get the average time to win for a user
+# 7. Get the average time to win for a user
 def get_player_average_win_time(conn, unique_id):
     """Get the users average time in minutes to win a game
     
@@ -195,7 +208,7 @@ def get_player_average_win_time(conn, unique_id):
     conn.close()
     return data[0] if data else 0
 
-# 2. Get the average time to win for a user
+# 8. Get the users current win streak
 def get_current_streak(conn, unique_id):
     """Get the user's current win streak.
     
@@ -254,7 +267,7 @@ def get_current_streak(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
-# 2. Get the average time to win for a user
+# 9. Get the user's max win streak
 def get_max_streak(conn, unique_id):
     """Get the user's max win streak.
     
@@ -304,7 +317,7 @@ def get_max_streak(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
-# 2. Get the win rate
+# 10. Get the win rate
 def get_win_rate(conn, unique_id):
     """Get the user's win rate.
     
@@ -348,7 +361,7 @@ def get_win_rate(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
-# 2. Get the total number of games played
+# 11. Get the total number of games played
 def get_total_played(conn, unique_id):
     """Get the total numbers of games played
     
@@ -370,6 +383,7 @@ def get_total_played(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
+# 12. Get values for the one screen stats chart
 def get_chart_labels_values(win_stats):
     labels = [1, 2, 3, 4, 5, 6]
     if win_stats == None:
@@ -380,7 +394,7 @@ def get_chart_labels_values(win_stats):
 
     return labels, values
 
-# Get all of a users stats
+# 13. Get all of a users stats
 def get_all_stats(database, unique_id):
     conn = sql.connect_to_database(database)
     win_stats = get_player_guess_stats(conn, unique_id)
@@ -401,7 +415,7 @@ def get_all_stats(database, unique_id):
     return win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played
 
 
-# 3. Main
+# 14. Main
 # Function that runs upon initialisation.
 def main():
     """Function that initialises the programme and sets
@@ -469,10 +483,13 @@ def main():
 
 #--------------------------------------------------
 
-
 ##### A P P L I C A T I O N #####------------------
+# 1. Home page for website
+# 2. Guess the country
+# 3. Accept Cookies
+# 4. Reject Cookies
 
-# Home page for website
+# 1. Home page for website
 @app.route("/")
 def home():
     global flaggle
@@ -537,6 +554,7 @@ def home():
 
     # Check player game conditions
     if any(x == 0 for x in guessed_distances) == True:
+        # If the distance between countries is 0, they've got the right country and have won
         has_player_won = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
         labels, values = get_chart_labels_values(win_stats)
@@ -544,6 +562,7 @@ def home():
         has_player_won = 0
 
     if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
+        # If player has guessed six ttimes and none are a distance of 0, they have lost
         has_player_lost = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
         labels, values = get_chart_labels_values(win_stats)
@@ -558,14 +577,11 @@ def home():
     session["game_id"] = game_id   
 
     # Final Formatting
-    win_rate = f"{win_rate:.0%}"
-    total_guesses = 6 - len(guessed_country_id)
+    win_rate = f"{win_rate:.0%}" # Win rate as a percentage
+    total_guesses = 6 - len(guessed_country_id) # Total guesses remaining
 
-    
-    # maybe review the colour processing
-    # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
-    # that plus making the website just look better in general
     print(todayscountry)
+
     # Render the template normally
     rendered_template = render_template("index.html"
                            , country = todayscountry
@@ -592,17 +608,17 @@ def home():
 
     return rendered_template  # If no new cookie, return the page normally
 
-# Compare Countries
+# 2. Guess the country
 @app.route("/guesscountry", methods=['GET', 'POST'])
 def guesscountry():
     global conn
     global country_index
 
     # Get user id and game id
-    
     user_id = session.get("user_id")  # Retrieve the ID from query parameters
     game_id = session.get("game_id")  # Retrieve the ID from query parameters
 
+    # Get the country they have gussed
     guessed_country = request.form['guessedcountry']
     
     # Perform Country Compare Functions
@@ -636,7 +652,6 @@ def guesscountry():
     cv2.imwrite("src/static/guesses/output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png", image_result[1])
     guessed_image_result_path = "/static//guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
 
-    
     # Store Results in Database
     try:
         conn = sql.connect_to_database(flaggle)
@@ -647,15 +662,20 @@ def guesscountry():
     
     return redirect("/")
 
+# 3. Accept Cookies
 @app.route("/accept", methods=["GET"])
 def accept():
+    # Run accept cookies function
     cookie.accept_cookies()
     return redirect("/")
 
+# 4. Reject Cookies
 @app.route("/reject", methods=["GET"])
 def reject():
+    # Run reject cookies function
     cookie.reject_cookies()
     return redirect("/")
+
 #--------------------------------------------------
 
 ##### I N I T I A L I S A T I O N #####
