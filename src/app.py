@@ -15,7 +15,8 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "70656E6E79616E64626173696C" # Required for session
 
-# Setup for identifying unique user id
+# Setup for identifying unique user id and using cookies
+from Cookies import Cookies as cookie
 import uuid
 
 # Import custom functions
@@ -35,15 +36,20 @@ from DateChecks import DateChecks as dc # Import all functions for date comparis
 def get_unique_id():
     """Get or create a unique ID for tracking."""
     unique_id = request.cookies.get("unique_id")
-
-    if not unique_id:
-        unique_id = str(uuid.uuid4())  # Generate a unique ID
+    consent_status = cookie.check_consent()
+    
+    if consent_status is None:
+        unique_id = str(uuid.uuid4())
+    elif consent_status is False:
+        unique_id = str(uuid.uuid4())
+    else:
+        unique_id = str(uuid.uuid4())
         # Create a response and set the cookie
         response = make_response(unique_id)
-        response.set_cookie("unique_id", unique_id, max_age=60*60*24*365)  # Expires in 1 year
+        response.set_cookie("unique_id", unique_id)
         return unique_id, response
 
-    return unique_id, None  # If cookie exists, return the existing ID
+    return unique_id, None  # If already cookie exists, return the existing ID
 
 # 2. Get the users game data from today
 def get_user_game_data_today(conn, unique_id):
@@ -490,6 +496,7 @@ def home():
     todayscountryid = locations.at[countries[country_index], 'country']
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
+    todayscountryurl = "/static//images/cleaned_flags/" + str(todayscountryid).lower() + ".png"
     # Get any existing id for user
     user_id, response = get_unique_id()
     # Get any current win stats
@@ -551,6 +558,10 @@ def home():
     session["user_id"] = user_id
     session["game_id"] = game_id   
 
+    # Final Formatting
+    win_rate = f"{win_rate:.0%}"
+    total_guesses = 6 - len(guessed_country_id)
+
     
     # maybe review the colour processing
     # need to add check for if the person has won and displaying the win + calculating the streak + guess statistics
@@ -559,6 +570,7 @@ def home():
     # Render the template normally
     rendered_template = render_template("index.html"
                            , country = todayscountry
+                           , countryurl = todayscountryurl
                            , countries = countries_sorted
                            , guesses = guesses
                            , won = has_player_won
@@ -571,7 +583,8 @@ def home():
                            , win_rate = win_rate
                            , total_played = total_played
                            , labels = labels
-                           , values = values)
+                           , values = values
+                           , total_guesses = total_guesses)
 
     if response:  
         # Set the response body to the rendered template
@@ -637,6 +650,15 @@ def guesscountry():
     
     return redirect("/")
 
+@app.route("/accept", methods=["GET"])
+def accept():
+    cookie.accept_cookies()
+    return redirect("/")
+
+@app.route("/reject", methods=["GET"])
+def reject():
+    cookie.reject_cookies()
+    return redirect("/")
 #--------------------------------------------------
 
 ##### I N I T I A L I S A T I O N #####

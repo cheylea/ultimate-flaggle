@@ -45,8 +45,14 @@
     </header>
     <br>
     <br>
+    <!--Top text-->
+    <p class="top-text">Select a country below to get started. You have 6 chances to guess the flag based on the distance and direction, colours (see the colours used below) - good luck!</p>
+    <!--Show count down for guesses remaining-->
+    <p class="top-text">Guesses Remaining: {{ total_guesses }} / 6 </p>
+    
     
     <!--Generate countries -->
+    <div style="width:15%; float: left;" ></div>
     <form action="{{ url_for('guesscountry') }}" method="post">
       <select id="guessedcountry" name="guessedcountry" class="select">
           <option disabled selected value> -- pick a country to guess! -- </option>
@@ -58,29 +64,30 @@
       <!-- Guess button -->
       <input class="guessButton" id="guess-button" type="submit" value="GUESS!">
     </form>
+    <div style="width:15%; float: left;"></div>
 
     <!-- Display possible colours-->
     <br>
     <p><div class="circle-main" style="background: #000000;"></div>
-      <div class="circle-main" style="background: #FFFFFF;"></div>
-      <div class="circle-main" style="background: #CE2424;"></div>
-      <div class="circle-main" style="background: #D0103A;"></div>
-      <div class="circle-main" style="background: #007934;"></div>
-      <div class="circle-main" style="background: #9216A0;"></div>
       <div class="circle-main" style="background: #0F41A3;"></div>
       <div class="circle-main" style="background: #00AFCA;"></div>
       <div class="circle-main" style="background: #8CB9DA;"></div>
-      <div class="circle-main" style="background: #DECDB6;"></div>
+      <div class="circle-main" style="background: #9216A0;"></div>
+      <div class="circle-main" style="background: #CE2424;"></div>
+      <div class="circle-main" style="background: #F48E93;"></div>
+      <div class="circle-main" style="background: #007934;"></div>
       <div class="circle-main" style="background: #FAF341;"></div>
       <div class="circle-main" style="background: #EACB3F;"></div>
       <div class="circle-main" style="background: #ff8000;"></div>
       <div class="circle-main" style="background: #61362E;"></div>
       <div class="circle-main" style="background: #a0a0a0;"></div>
-      <div class="circle-main" style="background: #F48E93;"></div>
+      <div class="circle-main" style="background: #DECDB6;"></div>
+      <div class="circle-main" style="background: #FFFFFF;"></div>
     </p>
     <br>
     <br>
     <table class="myTable" style="border-radius:  15px 15px 15px 15px;">
+
       <tr>
           <th>Flag</th>
           <th>Country</th>
@@ -146,29 +153,45 @@
       <br>
       <p>
         This version of flaggle works by combining the approachs of <a href="https://flagle.gg/" target="_blank">FLAGLE</a> and <a href="https://www.flaggle.net/" target="_blank">Flaggle</a>.
-        You guess a country and are shown hints for how close you are to the country to guess. Hints are the distance, direction and flag colour comparison.
+        <br>
+        To play, guess a country to start. Once you start guessing, you are shown hints for how close you are to the correct country to guess. Hints are the distance, direction and flag colour comparison.
         The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.
-        Please note, flags have been "cleaned" to be the same dimensions and a set of 16 colour shades so may not look exactly identical to the original flag.
+        See the below example for guessing China, when the answer is the United States.
+      </p>
+      <div>
+        <div class="column-left" ></div>
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/cleaned_flags/cn.png') }}" alt="example flag difference">
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/output_us_cn.png') }}" alt="example flag difference">
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/cleaned_flags/us.png') }}" alt="example flag difference">
+        <div class="column-left" ></div>
+      </div>
+      
+      <p>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        Please note, flags have been processed to be the same dimensions and only contain colour shades from a set of 15 colours. This means flags may not look exactly identical to the original flag, so do bear that in mind when playing.
       </p>
       <br>
       <p> Colours used to process flags:</p>
       <br>
       <p><div class="circle" style="background: #000000;"></div>
-        <div class="circle" style="background: #FFFFFF;"></div>
-        <div class="circle" style="background: #CE2424;"></div>
-        <div class="circle" style="background: #D0103A;"></div>
-        <div class="circle" style="background: #007934;"></div>
-        <div class="circle" style="background: #9216A0;"></div>
         <div class="circle" style="background: #0F41A3;"></div>
         <div class="circle" style="background: #00AFCA;"></div>
         <div class="circle" style="background: #8CB9DA;"></div>
-        <div class="circle" style="background: #DECDB6;"></div>
+        <div class="circle" style="background: #9216A0;"></div>
+        <div class="circle" style="background: #CE2424;"></div>
+        <div class="circle" style="background: #F48E93;"></div>
+        <div class="circle" style="background: #007934;"></div>
         <div class="circle" style="background: #FAF341;"></div>
         <div class="circle" style="background: #EACB3F;"></div>
         <div class="circle" style="background: #ff8000;"></div>
         <div class="circle" style="background: #61362E;"></div>
         <div class="circle" style="background: #a0a0a0;"></div>
-        <div class="circle" style="background: #F48E93;"></div>
+        <div class="circle" style="background: #DECDB6;"></div>
+        <div class="circle" style="background: #FFFFFF;"></div>
       </p>
     </div>
 
@@ -179,7 +202,10 @@
         <span onclick="document.getElementById('youWin').style.display='none'" class="close-button topright">&times;</span>
       </header>
       <!-- Winning details and stats -->
-      <p>You won!</p>
+      <p>Flag superstar - you won! It was {{ country }}. </p>
+      <p>Come back tomorrow to keep up your streak.</p>
+      <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
+      
       <table class="statsTable">
         <tr>
             <th>Win Streak</th>
@@ -214,7 +240,9 @@
         <span onclick="document.getElementById('youLose').style.display='none'" class="close-button topright">&times;</span>
       </header>
       <!-- Losing details and stats -->
-      <p>You lose!</p>
+      <p>Oh no you're out of guesses! The correct answer was {{ country }}.</p>
+      <p>Try again tomorrow.</p>
+      <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
       <table class="statsTable">
         <tr>
             <th>Win Streak</th>
@@ -245,12 +273,31 @@
   <div class="column-left" ></div>
 </div>
 
+<div id="cookie-banner" style="position: fixed; bottom: 10px; width: 100%; background: black; color: white; padding: 10px; text-align: center; display: none;">
+  We use cookies to track your win streak and stats. No personal data is stored. 
+  <a href="{{ url_for('static',filename='policies/privatepolicy.txt') }}" style="color: yellow;">Learn more</a>.
+  <a onclick="consentedCookies()" href="{{ url_for('accept') }}" class="cookie-button">Accept</a>
+  <a onclick="consentedCookies()" href="{{ url_for('reject') }}" class="cookie-button">Reject</a>
+</div>
+
 <!-- Footer -->
 <div class="footer">
   <p>All rights reserved © 🌸 <a href="https://cheylea.github.io/" target="_blank">Cheylea Hopkinson</a> 2025. Contact on 🔗 <a href="https://www.linkedin.com/in/cheyleahopkinson/" target="_blank">LinkedIn</a>. ☕ <a href="https://www.ko-fi.com/cheylea" target="_blank">Buy me a coffee?</a></a></p>
 </div>
 
 <script>
+  function checkCookieConsent() {
+      if (!localStorage.getItem("cookie-consent")) {
+          document.getElementById("cookie-banner").style.display = "block";
+      }
+  }
+
+  function consentedCookies() {
+      document.getElementById("cookie-banner").style.display = "none";
+  }
+
+  checkCookieConsent();
+
   function closeWinPopup() {
     document.getElementById("youWin").style.display = "none";
   }
@@ -334,32 +381,85 @@
   const values = {{ values | tojson }};
 
   const ctx = document.getElementById('userChart').getContext('2d');
-  new Chart(ctx, {
-      type: 'bar',  // Change to 'pie', 'line', etc.
-      data: {
-          labels: labels,
-          datasets: [{
-              label: 'Total Games Won',
-              data: values,
-              borderWidth: 1
-          }]
-      },
-      options: {
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Total Games Won',
+            data: values,
+            backgroundColor: '#FF5733', // Change to desired color
+
+        }]
+    },
+    options: {
         indexAxis: 'y',
-          responsive: true,
-          scales: {
-              y: { beginAtZero: true },
-              x: { beginAtZero: true }
-          }
-      }
-  });
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'black', // Makes "Total Games Won" black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black', // Black grid lines
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes Y-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            },
+            x: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black',
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes X-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        }
+    }
+});
   
-  $(document).ready(function() {
+  function toggleButton() {
+    let selectedValue = $('#guessedcountry').val();
+    var button = document.getElementById('guess-button');
+
+    // Disable if no country is selected, enable otherwise
+    button.disabled = (selectedValue === null || selectedValue === "");
+}
+
+$(document).ready(function() {
     $('#guessedcountry').select2({
-    placeholder: " -- pick a country to guess! -- ",
-    allowClear: true
+        placeholder: " -- pick a country to guess! -- ",
+        allowClear: true
     });
-  });
+
+    toggleButton();
+
+    $('#guessedcountry').on('change', toggleButton);
+
+    $('#guessedcountry').on('select2:open', function() {
+        setTimeout(() => {
+            document.querySelector('.select2-container--open .select2-search__field').focus();
+        }, 50); // Small delay to ensure the input is available
+    });
+});
   
 </script>
 </body>

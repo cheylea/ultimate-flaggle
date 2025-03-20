@@ -73,6 +73,15 @@ Contents
     display: table;
     clear: both;
   }
+
+  .top-text {
+    color:white;
+    font-weight:bold;
+    margin-left: 20%;
+    margin-right: 20%;
+    margin-bottom: 2%;
+    font-size: 14px;
+  }
   
   /* Table Styling */
   
@@ -107,17 +116,16 @@ Contents
     margin-left: 15%;
   }
 
-  table.statsTable td, table.myTable th {
+  table.statsTable td, table.statsTable th {
     padding: 6px 10px;
+    border: solid 1px black
   }
 
-  table.statsTable thead {
-    background: #B594B6;
-    font-weight: bold;
-  }
 
-  table.statsTable thead th {
+  table.statsTable th {
     font-weight: normal;
+    background-color: black;
+    color: white;
   }
 
   .howToPopup {
@@ -173,6 +181,10 @@ Contents
     top: 0
   }
 
+  .select {
+    width: 60%;
+  }
+
   .guessButton {
     box-shadow:inset 3px 4px 0px 0px #c12724;
     background-color:#F8312F;
@@ -185,6 +197,7 @@ Contents
     padding:8px 16px;
     text-decoration:none;
     text-shadow:0px 1px 0px #601412;;
+    width: 10%;
   }
   .guessButton:hover {
     background-color:#fb615f;
@@ -199,13 +212,17 @@ Contents
     margin: 0.9%;
     float: left;
     position: relative;
-    padding: calc(70% / 32);
+    padding: calc(70% / 30);
+    box-shadow: inset 0 0 0 4px #E9F1F7;
   }
 
-  .select {
-    width: 300px;
+  #cookie-banner {
+    
   }
 
+  
+
+ 
 /* 4. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .footer {
