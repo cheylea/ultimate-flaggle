@@ -32,15 +32,6 @@ from PIL import Image
 import sqlite3
 #--------------------------------------------------
 
-###### G L O B A L #####------------------------
-locations = ""
-countries = ""
-lastshuffled = ""
-countries_sorted = ""
-max_guesses = ""
-country_index = ""
-flaggle = ""
-#--------------------------------------------------
 
 ##### F U N C T I O N S #####----------------------
 # 1.  User UniqueId generation
@@ -709,6 +700,8 @@ def main():
     lastshuffled = date.today()
     country_index = 0
     app.run()
+
+main()
 
 #--------------------------------------------------
 
