@@ -216,13 +216,45 @@ Contents
     box-shadow: inset 0 0 0 4px #E9F1F7;
   }
 
-  #cookie-banner {
-    
+  .cookie-banner {
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    background: black;
+    color: white;
+    padding: 10px;
+    text-align:
+    center;
+    display: none;
   }
 
-  
+  .cookie-button-accept {
+    background-color: #007934;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 8px;
+    padding: 5px;
+    width: 100px;
+  }
 
- 
+  .cookie-button-reject {
+    background-color: #F8312F;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 8px;
+    padding: 5px;
+    width: 100px;
+  }
+
+
 /* 4. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .footer {

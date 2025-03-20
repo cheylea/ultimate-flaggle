@@ -273,11 +273,12 @@
   <div class="column-left" ></div>
 </div>
 
-<div id="cookie-banner" style="position: fixed; bottom: 10px; width: 100%; background: black; color: white; padding: 10px; text-align: center; display: none;">
-  We use cookies to track your win streak and stats. No personal data is stored. 
-  <a href="{{ url_for('static',filename='policies/privatepolicy.txt') }}" style="color: yellow;">Learn more</a>.
-  <a onclick="consentedCookies()" href="{{ url_for('accept') }}" class="cookie-button">Accept</a>
-  <a onclick="consentedCookies()" href="{{ url_for('reject') }}" class="cookie-button">Reject</a>
+<div id="cookie-banner" class="cookie-banner">
+  <p>We use cookies to track your win streak and stats. No personal data is stored. <a href="{{ url_for('static',filename='policies/privatepolicy.txt') }}" style="color: #F8312F;">Learn more</a>.</p>
+  <p>For the app to work, you must accept cookies.</p>
+  <br>
+  <a onclick="acceptCookies()" href="{{ url_for('accept') }}" class="cookie-button-accept">Accept</a>
+  <a onclick="rejectCookies()" href="{{ url_for('reject') }}" class="cookie-button-reject">Reject</a>
 </div>
 
 <!-- Footer -->
@@ -286,17 +287,23 @@
 </div>
 
 <script>
-  function checkCookieConsent() {
-      if (!localStorage.getItem("cookie-consent")) {
-          document.getElementById("cookie-banner").style.display = "block";
-      }
-  }
+  function acceptCookies() {
+    localStorage.setItem("cookie-consent", "accepted");
+    document.getElementById("cookie-banner").style.display = "none";
+}
 
-  function consentedCookies() {
-      document.getElementById("cookie-banner").style.display = "none";
-  }
+function rejectCookies() {
+    localStorage.setItem("cookie-consent", "rejected");
+    document.getElementById("cookie-banner").style.display = "none";
+}
 
-  checkCookieConsent();
+function checkCookieConsent() {
+    if (!localStorage.getItem("cookie-consent")) {
+        document.getElementById("cookie-banner").style.display = "block";
+    }
+}
+
+checkCookieConsent();
 
   function closeWinPopup() {
     document.getElementById("youWin").style.display = "none";

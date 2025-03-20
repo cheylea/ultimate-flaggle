@@ -37,18 +37,16 @@ def get_unique_id():
     """Get or create a unique ID for tracking."""
     unique_id = request.cookies.get("unique_id")
     consent_status = cookie.check_consent()
-    
-    if consent_status is None:
+
+    if unique_id is None:
         unique_id = str(uuid.uuid4())
-    elif consent_status is False:
-        unique_id = str(uuid.uuid4())
-    else:
-        unique_id = str(uuid.uuid4())
+
+    if consent_status is True:
         # Create a response and set the cookie
         response = make_response(unique_id)
         response.set_cookie("unique_id", unique_id)
         return unique_id, response
-
+    
     return unique_id, None  # If already cookie exists, return the existing ID
 
 # 2. Get the users game data from today
@@ -499,6 +497,7 @@ def home():
     todayscountryurl = "/static//images/cleaned_flags/" + str(todayscountryid).lower() + ".png"
     # Get any existing id for user
     user_id, response = get_unique_id()
+    print(user_id)
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
     
@@ -645,8 +644,6 @@ def guesscountry():
         conn.close()
     except:
         return redirect("error.html")
-    
-
     
     return redirect("/")
 
