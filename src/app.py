@@ -694,7 +694,7 @@ def main():
 
     
     # Get details about the locations
-    path = THIS_FOLDER / "country latitude and longitude.csv"
+    path = THIS_FOLDER / "/static/country latitude and longitude.csv"
     locations = pd.read_csv(path)
     # Generate list of country indexes
     countries = list(range(0, len(locations))) # List out index to select "random" country
