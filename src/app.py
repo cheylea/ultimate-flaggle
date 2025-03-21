@@ -30,6 +30,10 @@ from PIL import Image
 
 # Required for using Database Functions
 import sqlite3
+
+# Set paths
+from pathlib import Path
+THIS_FOLDER = Path(__file__).parent.resolve()
 #--------------------------------------------------
 
 
@@ -690,7 +694,8 @@ def main():
 
     
     # Get details about the locations
-    locations = pd.read_csv('src\static\country latitude and longitude.csv')
+    path = THIS_FOLDER / "country latitude and longitude.csv"
+    locations = pd.read_csv(path)
     # Generate list of country indexes
     countries = list(range(0, len(locations))) # List out index to select "random" country
     r.shuffle(countries)
@@ -699,9 +704,7 @@ def main():
     # Start shuffle from today upon initialisation
     lastshuffled = date.today()
     country_index = 0
-    app.run()
 
-main()
 
 #--------------------------------------------------
 
