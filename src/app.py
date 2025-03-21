@@ -657,7 +657,7 @@ def main():
     max_guesses = 6
 
     # Create table for the flaggle game details database
-    flaggle = r"databases\flaggle.db"
+    flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db")
 
     # Answers
     drop_table_answer = """DROP TABLE IF EXISTS Answer; """
@@ -737,7 +737,7 @@ def home():
     todayscountryid = locations.at[countries[country_index], 'country']
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    todayscountryurl = "/static//images/cleaned_flags/" + str(todayscountryid).lower() + ".png"
+    todayscountryurl = os.path.join(THIS_FOLDER, "static", "images", "cleaned_flags", str(todayscountryid).lower() + ".png")
     # Get any existing id for user
     user_id, response = get_unique_id()
 
@@ -771,9 +771,9 @@ def home():
         guessed_country_id, guessed_distances, direction, image_url = [], [], [], []  # Empty lists if no data
 
     # Format the select results to display in the template
-    guessed_image_path = ["/static//images/cleaned_flags/" + str(x).lower() + ".png" for x in guessed_country_id]
+    guessed_image_path = [os.path.join(THIS_FOLDER, "static", "images", "cleaned_flags", str(x).lower() + ".png") for x in guessed_country_id]
     guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
-    guessed_directions_image_path = ["/static//images/directions/" + str(x).lower() + ".png" for x in direction]
+    guessed_directions_image_path = [os.path.join(THIS_FOLDER, "static", "images", "directions", str(x).lower() + ".png") for x in direction]
     # Convert country IDs into Country Names
     country_name_dict = dict(zip(locations['country'], locations['name']))
     guesses_country_name = [country_name_dict.get(code, code) for code in guessed_country_id]
@@ -868,15 +868,15 @@ def guesscountry():
     direction = distance_compare_result[3]
 
     # Retreive the urls for the cleaned flag images for both guesses and todays country
-    guessed_path = 'src/static/images/cleaned_flags/' + str(guessedcountryid).lower() + '.png'
-    answer_path = 'src/static/images/cleaned_flags/' + str(todayscountryid).lower() + '.png'
+    guessed_path = os.path.join(THIS_FOLDER, "static", "images", "cleaned_flags", str(guessedcountryid).lower() + '.png')
+    answer_path = os.path.join(THIS_FOLDER, "static", "images", "cleaned_flags", str(todayscountryid).lower() + '.png')
     image1 = cv2.imread(guessed_path)
     image2 = cv2.imread(answer_path)
 
     # Match colours and save resulting image
     image_result = match_colours(image1, image2)
-    cv2.imwrite("src/static/guesses/output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png", image_result[1])
-    guessed_image_result_path = "/static//guesses/output_" + str(todayscountryid).lower() + "_"  + str(guessedcountryid).lower() + ".png"
+    cv2.imwrite(os.path.join(THIS_FOLDER, "static", "guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png"), image_result[1])
+    guessed_image_result_path = os.path.join(THIS_FOLDER, "static", "guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png")
 
     # Store Results in Database
     try:
