@@ -734,10 +734,10 @@ def home():
     country_index = abs((lastshuffled - today).days)
     # Get todays' country
     todayscountry = locations.at[countries[country_index], 'name']
-    todayscountryid = locations.at[countries[country_index], 'country']
+    todayscountryid = str(locations.at[countries[country_index], 'country'])
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    todayscountryurl = {{ url_for('static', filename="images/cleaned_flags/" + str(todayscountryid).lower() + ".png") }}
+    todayscountryurl = url_for('static', filename="images/cleaned_flags/" + str(todayscountryid).lower() + ".png")
     # Get any existing id for users
     user_id, response = get_unique_id()
 
@@ -870,16 +870,20 @@ def guesscountry():
     direction = distance_compare_result[3]
 
     # Retreive the urls for the cleaned flag images for both guesses and todays country
-    
-    guessed_path = os.path.join("images", "cleaned_flags", str(guessedcountryid).lower() + '.png')
-    answer_path = os.path.join("images", "cleaned_flags", str(todayscountryid).lower() + '.png')
+    # Get the absolute path of the static folder
+    static_folder = app.static_folder  
+
+    # Build the correct path
+    guessed_path = os.path.join(static_folder, "images", "cleaned_flags", f"{str(guessedcountryid).lower()}.png")
+    answer_path = os.path.join(static_folder, "images", "cleaned_flags", f"{str(todayscountryid).lower()}.png")
     image1 = cv2.imread(guessed_path)
     image2 = cv2.imread(answer_path)
 
     # Match colours and save resulting image
     image_result = match_colours(image1, image2)
-    cv2.imwrite(os.path.join("guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png"), image_result[1])
-    guessed_image_result_path = os.path.join("guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png")
+    cv2.imwrite(os.path.join(static_folder, "guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png"), image_result[1])
+    guessed_image_result_path = url_for('static', filename=f'guesses/output_{str(todayscountryid).lower()}_{str(guessedcountryid).lower()}.png')
+    print(guessed_image_result_path)
 
     # Store Results in Database
     try:
