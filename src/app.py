@@ -737,7 +737,7 @@ def home():
     todayscountryid = locations.at[countries[country_index], 'country']
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    todayscountryurl = os.path.join("images", "cleaned_flags", str(todayscountryid).lower() + ".png")
+    todayscountryurl = {{ url_for('static', filename=f'images/cleaned_flags/{str(todayscountryid).lower()}.png') }}
     # Get any existing id for user
     user_id, response = get_unique_id()
 
@@ -813,7 +813,7 @@ def home():
     # Render the template normally
     rendered_template = render_template("index.html"
                            , country = todayscountry
-                           , countryurl = {{ url_for('static', filename=todayscountryurl) }}
+                           , countryurl = todayscountryurl
                            , countries = countries_sorted
                            , guesses = guesses
                            , won = has_player_won
