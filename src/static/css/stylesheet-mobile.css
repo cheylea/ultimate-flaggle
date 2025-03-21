@@ -81,7 +81,7 @@ Contents
     font-weight:bold;
     margin-left: 0%;
     margin-right: 0%;
-    font-size: 11px;
+    font-size: 12px;
     margin-bottom: 2%;
   }
   
@@ -93,20 +93,19 @@ Contents
     table-layout: fixed;
     width: 100%;
     margin-top: 15px;
-    font-size: 11px;
+    
   }
 
-  table.myTable td, table.myTable th {
+  table.myTable td {
     padding: 6px 6px;
+    font-size: 12px;
   }
 
-  table.myTable thead {
-    background: #B594B6;
+
+  table.myTable th {
     font-weight: bold;
-  }
-
-  table.myTable thead th {
-    font-weight: normal;
+    padding: 6px 10px;
+    font-size: 14px;
   }
 
   table.statsTable {
@@ -139,7 +138,7 @@ Contents
     left: 50%;
     transform: translate(-50%, -35%);
     text-align: center;
-    padding: 30px 30px 30px 30px;
+    padding: 10% 10% 10% 10%;
     box-shadow: 10px 10px 5px 2px rgba(0, 0, 0, 0.2);
     border-radius: 15px 15px 15px 15px;
   }
@@ -150,11 +149,9 @@ Contents
   }
 
   .howToPopup .circle {
-    width: calc(100% / 17); 
-    height: calc(100% / 17); 
     border-radius: 50%;
     float: left;
-    padding: calc(100% / 17);
+    padding: 6%;
   }
 
   .howToPopup .p {
@@ -224,13 +221,15 @@ Contents
   /* Cookies */
   .cookie-banner {
     position: fixed;
-    bottom: 0px;
+    top: 8%;
     width: 100%;
+    height: 40%;
     background: black;
     color: white;
-    padding: 10px;
-    text-align:
-    center;
+    padding-top: 30%;
+    padding-left: 3%;
+    padding-right: 3%;
+    text-align: center;
     display: none;
   }
 
@@ -270,7 +269,7 @@ Contents
     margin-top: auto;
     font-weight: bolder;
     color: #ffffff;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .footer a {

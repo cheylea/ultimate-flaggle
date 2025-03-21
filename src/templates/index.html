@@ -46,9 +46,12 @@
     <br>
     <br>
     <!--Top text-->
-    <p class="top-text">Select a country below to get started. You have 6 chances to guess the flag based on the distance and direction, colours (see the colours used below) - good luck!</p>
+    <p class="top-text">You have 6 chances to guess a mystery flag based on the Distance 📐, Direction 🧭 and Colour Difference 🏳️‍🌈.</p>
+    <p class="top-text">Flags have been changed slightly to align with the set colours below. The 'Colour Difference' image will show bright green where there is a match between colour and location.</p>
+    <p class="top-text">For more details on how this works, click the question mark at the top right.</p>
     <!--Show count down for guesses remaining-->
     <p class="top-text">Guesses Remaining: {{ total_guesses }} / 6 </p>
+    <p class="top-text">Select a country below to get started. Good luck!</p>
     
     
     <!--Generate countries -->
@@ -89,18 +92,14 @@
     <table class="myTable" style="border-radius:  15px 15px 15px 15px;">
 
       <tr>
-          <th>Flag</th>
-          <th>Country</th>
-          <th>Distance</th>
-          <th>Direction</th>
-          <th>Difference</th>
+          <th>Flag & Country</th>
+          <th>Distance & Direction</th>
+          <th>Colour Difference</th>
       </tr>
       {% for flag, country, distance, direction, image in guesses %}
       <tr>
-         <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"></td>
-          <td>{{ country }}</td>
-          <td>{{ distance }}</td>
-          <td><img src="{{ direction }}" style="max-width: 50%; height: auto;"></td>
+         <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"><br>{{ country }}</td>
+          <td><img src="{{ direction }}" style="max-width: 35%; height: auto;"><br>{{ distance }}</td>
           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
       </tr>
       {% endfor %}
@@ -185,7 +184,9 @@
         <div class="circle" style="background: #CE2424;"></div>
         <div class="circle" style="background: #F48E93;"></div>
         <div class="circle" style="background: #007934;"></div>
-        <div class="circle" style="background: #FAF341;"></div>
+      </p>
+      <p>
+        <div class="circle" style="background: #FAF341; margin-left:calc(100% / 20);"></div>
         <div class="circle" style="background: #EACB3F;"></div>
         <div class="circle" style="background: #ff8000;"></div>
         <div class="circle" style="background: #61362E;"></div>
@@ -275,7 +276,7 @@
 
 <div id="cookie-banner" class="cookie-banner">
   <p>We use cookies to track your win streak and stats. No personal data is stored. <a href="{{ url_for('static',filename='policies/privatepolicy.txt') }}" style="color: #F8312F;">Learn more</a>.</p>
-  <p>For the app to work, you must accept cookies.</p>
+  <p>For the app to work, you <b>must</b> accept cookies.</p>
   <br>
   <a onclick="acceptCookies()" href="{{ url_for('accept') }}" class="cookie-button-accept">Accept</a>
   <a onclick="rejectCookies()" href="{{ url_for('reject') }}" class="cookie-button-reject">Reject</a>
