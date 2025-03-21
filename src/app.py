@@ -2,6 +2,7 @@
 # Ultimate Flaggle
 
 ###### I M P O R T S #####------------------------
+import os
 import pandas as pd # for handling dataframes
 import random as r
 import datetime as dt
@@ -694,8 +695,7 @@ def main():
 
     
     # Get details about the locations
-    path = THIS_FOLDER / "static/country latitude and longitude.csv"
-    print(path)
+    path = os.path.join(THIS_FOLDER, "static", "country latitude and longitude.csv")
     locations = pd.read_csv(path)
     # Generate list of country indexes
     countries = list(range(0, len(locations))) # List out index to select "random" country
