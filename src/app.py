@@ -705,7 +705,7 @@ def main():
     lastshuffled = date.today()
     country_index = 0
 
-
+main()
 #--------------------------------------------------
 
 ##### A P P L I C A T I O N #####------------------
