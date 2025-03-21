@@ -771,8 +771,10 @@ def home():
         guessed_country_id, guessed_distances, direction, image_url = [], [], [], []  # Empty lists if no data
 
     # Format the select results to display in the template
+    guessed_country_id = list(guessed_country_id)
     guessed_image_path = [url_for('static', filename=f'images/cleaned_flags/{str(x).lower()}.png') for x in guessed_country_id]
     guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
+    direction = list(direction)
     guessed_directions_image_path = [url_for('static', filename=f'images/directions/{str(x).lower()}.png') for x in direction]
     # Convert country IDs into Country Names
     country_name_dict = dict(zip(locations['country'], locations['name']))
