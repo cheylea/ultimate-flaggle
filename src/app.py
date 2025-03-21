@@ -737,8 +737,9 @@ def home():
     todayscountryid = locations.at[countries[country_index], 'country']
     todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
     todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    todayscountryurl = {{ url_for('static', filename=f'images/cleaned_flags/{str(todayscountryid).lower()}.png') }}
-    # Get any existing id for user
+    todayscountryid = str(todayscountryid)
+    todayscountryurl = {{ url_for('static', filename=f'images/cleaned_flags/{todayscountryid.lower()}.png') }}
+    # Get any existing id for users
     user_id, response = get_unique_id()
 
     # Get any current win stats
