@@ -66,8 +66,9 @@ def get_unique_id():
         response.set_cookie("unique_id", unique_id, max_age=60*60*24*365*10)
         return unique_id, response
 
-    # Generate a new unique_id if it doesn't exist
-    unique_id = str(uuid.uuid4())
+    if unique_id == None:
+        # Generate a new unique_id if it doesn't exist
+        unique_id = str(uuid.uuid4())
 
     if consent_status:  
         # Store the cookie only if consent is given
