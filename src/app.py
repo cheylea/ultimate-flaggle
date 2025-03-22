@@ -3,11 +3,8 @@
 
 ###### I M P O R T S #####------------------------
 import os
-import pandas as pd # for handling dataframes
-import random as r
 import datetime as dt
 from datetime import date
-import math
 from socket import gethostname # for PythonAnywhere
 from apscheduler.schedulers.background import BackgroundScheduler # for refreshing the page
 
@@ -52,26 +49,30 @@ THIS_FOLDER = Path(__file__).parent.resolve()
 # 11. Get the total number of games played
 # 12. Get values for the one screen stats chart
 # 13. Get all of a users stats
-# 14. Main
 
 # 1. User UniqueId generation 
 def get_unique_id():
     """Get or create a unique ID for tracking depending on cookie consent."""
-    unique_id = request.cookies.get("unique_id")
-    consent_status = check_consent()
+    unique_id = request.cookies.get("unique_id")  # Check if cookie exists
+    consent_status = check_consent()  # Check if user has given consent
 
-    # Generate a unique_id if there isn't one
-    if unique_id is None:
-        unique_id = str(uuid.uuid4())
-
-    # Set cookie if allowed
-    if consent_status is True:
-        # Create a response and set the cookie
+    if unique_id:  
+        # If unique_id exists, reset its expiry
         response = make_response(unique_id)
-        response.set_cookie("unique_id", unique_id)
+        response.set_cookie("unique_id", unique_id, max_age=60*60*24*365*10)
         return unique_id, response
-    
-    return unique_id, None  # If already cookie exists, return the existing ID
+
+    # Generate a new unique_id if it doesn't exist
+    unique_id = str(uuid.uuid4())
+
+    if consent_status:  
+        # Store the cookie only if consent is given
+        response = make_response(unique_id)
+        response.set_cookie("unique_id", unique_id, max_age=60*60*24*365*10)
+        return unique_id, response
+
+    # If no cookie exists and no consent, return the new ID but don't store it
+    return unique_id, None
 
 # 2. Get the users game data from today
 def get_user_game_data_today(conn, unique_id):
@@ -83,7 +84,9 @@ def get_user_game_data_today(conn, unique_id):
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT CountryId, Distance, Direction, ComparedImageUrl FROM GameDetail WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC", (unique_id, date.today()))
+    cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
+                      JOIN Country c ON c.Country = gd.Country
+                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, date.today()))
     data = cursor.fetchall()
 
     conn.close()
@@ -122,7 +125,7 @@ def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction,
 
     # Correct SQL query: specify all the column names
     sql = """
-    INSERT INTO GameDetail (UniqueId, GameId, DateTimeGuessed, CountryId, Distance, Direction, ComparedImageUrl)
+    INSERT INTO GameDetail (UniqueId, GameId, DateTimeGuessed, Country, Distance, Direction, ComparedImageUrl)
     VALUES (?, ?, ?, ?, ?, ?, ?);
     """
     cursor.execute(sql, (unique_id, game_id, dt.datetime.now(), country_id, distance, direction, image_url))
@@ -396,6 +399,11 @@ def get_total_played(conn, unique_id):
 
 # 12. Get values for the one screen stats chart
 def get_chart_labels_values(win_stats):
+    """Get the labels and values from a dataset returns from a sqlite database
+    
+    Key arguments
+    winstats -- result from sqlite database with number of times a player guessed 1-6
+    """
     labels = [1, 2, 3, 4, 5, 6]
     if win_stats == None:
         values = [0, 0, 0, 0, 0, 0]
@@ -405,8 +413,51 @@ def get_chart_labels_values(win_stats):
 
     return labels, values
 
-# 13. Get all of a users stats
+# 13. Get todays country
+def get_todays_country(conn):
+    """Execute SQL to get todays country
+
+    Key arguments
+    conn -- sqlite connection
+    sql -- select string of sqlite code
+    """
+    sql = "SELECT CountryId FROM Answer WHERE Date = '" + str(date.today()) + "'"
+    c = conn.cursor()
+    c.execute(sql)
+    result = c.fetchone()
+    return result[0]
+
+# 14. Lookup a countries details by index
+def get_country_details(conn, countryindex):
+    """Execute SQL to get a countries details
+
+    Key arguments
+    conn -- sqlite connection
+    sql -- select string of sqlite code
+    """
+    sql = "SELECT Country, Latitude, Longitude, Name FROM Country WHERE CountryId = '" + str(countryindex) + "'"
+    c = conn.cursor()
+    c.execute(sql)
+    result = c.fetchall()
+
+    if result:
+        code = result[0][0]
+        latitude = result[0][1]
+        longitude = result[0][2]
+        name = result[0][3]
+        url = url_for('static', filename="images/cleaned_flags/" + str(code).lower() + ".png")
+    else:
+        return None, None, None, None, None
+    return code, latitude, longitude, name, url
+
+# 15. Get all of a users stats
 def get_all_stats(database, unique_id):
+    """Execute every sql result required for game start up
+    
+    Key arguments
+    database -- The database to connect to
+    unique_id -- The unique id to filter on when running start up stats
+    """
     conn = connect_to_database(database)
     win_stats = get_player_guess_stats(conn, unique_id)
     conn = connect_to_database(database)
@@ -425,7 +476,7 @@ def get_all_stats(database, unique_id):
     total_played = get_total_played(conn, unique_id)
     return win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played
 
-# 14. Cookies functions
+# 16. Cookies functions
 def accept_cookies():
     """Function to accept cookies."""
     consent_given = True
@@ -443,36 +494,7 @@ def check_consent():
     consent = session.get('cookie-consents')
     return consent
 
-# 15. Date Checks
-
-# Function to check if we need to shuffle the list of countries
-def checkShuffle(last_shuffled_date, locations):
-    """Check if out of a list if we need to reshuffle the list
-    Returns a trust false for whether or not it needs to be
-    reshuffled.
-    Key arguments
-    last_shuffled_date -- when the list was last shuffled
-    locations -- list of items to shuffle
-    """
-    today = date.today()
-    # If it has been 244 days since the last shuffle we shuffle again
-    # This is to avoid cycling through the same order of countries over and over
-    if last_shuffled_date > today + dt.timedelta(days=len(locations)):
-        return 1
-    else:
-        return 0
-
-# Function to check if the player is viewing this on a new day
-def is_new_day(last_played):
-    """Check if the last played date is different from today.
-    
-    Key arguments
-    last_played -- when the user last played the game
-    """
-    today = dt.date.today().isoformat()
-    return last_played != today
-
-# 16. Database functions
+# 17. Database functions
 
 # Create database connection
 def connect_to_database(database_file):
@@ -639,74 +661,7 @@ def process_flags(imagepath):
     image.save(imagepath.replace("flags","cleaned_flags"))
 
 
-# 14. Main
-# Function that runs upon initialisation.
-def main():
-    """Function that initialises the programme and sets
-    up the starting databases
 
-    """
-    global locations
-    global countries
-    global lastshuffled
-    global countries_sorted
-    global max_guesses
-    global country_index
-    global flaggle
-    
-    max_guesses = 6
-
-    # Create table for the flaggle game details database
-    flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db")
-
-    # Answers
-    drop_table_answer = """DROP TABLE IF EXISTS Answer; """
-    create_table_answer = """ CREATE TABLE IF NOT EXISTS Answer (
-                                CountryId text PRIMARY KEY,
-                                Date date
-                            ); """
-
-    # Table that stores details of a persons game
-    drop_table_games_detail = """DROP TABLE IF EXISTS GameDetail; """
-    create_table_games_detail = """ CREATE TABLE IF NOT EXISTS GameDetail (
-                                GameDetailId integer PRIMARY KEY,
-                                UniqueId integer,
-                                GameId integer,
-                                DateTimeGuessed datetime,
-                                CountryId, 
-                                Distance float,
-                                Direction text,
-                                ComparedImageUrl text
-                            ); """
-    
-    # Make connection to flaggle database file
-    #conn = connect_to_database(flaggle)
-    #if conn is not None:
-    #    # Execute required sql
-    #    execute_sql(conn, drop_table_answer)
-    #    execute_sql(conn, create_table_answer)
-    #    execute_sql(conn, drop_table_games_detail)
-    #    execute_sql(conn, create_table_games_detail)
-    #    
-    #    print("Database initialised.")
-    #    
-    #else:
-    #    print("Error, no connection.")
-
-    
-    # Get details about the locations
-    path = os.path.join(THIS_FOLDER, "static", "country latitude and longitude.csv")
-    locations = pd.read_csv(path)
-    # Generate list of country indexes
-    countries = list(range(0, len(locations))) # List out index to select "random" country
-    r.shuffle(countries)
-    countries_sorted = sorted(locations['name'])
-
-    # Start shuffle from today upon initialisation
-    lastshuffled = date.today()
-    country_index = 0
-
-main()
 #--------------------------------------------------
 
 ##### A P P L I C A T I O N #####------------------
@@ -718,32 +673,22 @@ main()
 # 1. Home page for website
 @app.route("/")
 def home():
-    global flaggle
     ### Set up the game and fetch any required user information
-    global locations
-    global lastshuffled
-    global country_index
-    today = date.today()
-    # When page is loaded, checks if we need to reshuffle the list
-    check_shuffle = checkShuffle(lastshuffled, locations)
-    # If we do, then shuffle the countries
-    if check_shuffle == 1:
-        r.shuffle(countries)
-        lastshuffled = today
-    # Systematically go through each index day by day to get todays country
-    country_index = abs((lastshuffled - today).days)
-    # Get todays' country
-    todayscountry = locations.at[countries[country_index], 'name']
-    todayscountryid = str(locations.at[countries[country_index], 'country'])
-    todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
-    todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
-    todayscountryurl = url_for('static', filename="images/cleaned_flags/" + str(todayscountryid).lower() + ".png")
+    
+    flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
+    conn = connect_to_database(flaggle) # Connect to database
+    todayscountryindex = get_todays_country(conn) # Get todays country index
+
+    # Get todays country details
+    todayscountryid, todayscountrylat, todayscountrylong, todayscountry, todayscountryurl = get_country_details(conn, todayscountryindex)
+    countries = execute_sql_fetch_all(conn, "SELECT Name FROM Country ORDER BY Name;")
+    countries = [x[0] for x in countries ]
+    conn.close()
     # Get any existing id for users
     user_id, response = get_unique_id()
 
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
-    
     labels, values = get_chart_labels_values(win_stats)
     
     ### Display any guessed countries for the user
@@ -766,19 +711,29 @@ def home():
 
     if user_today_data:
         print("nothing here!...yet")
-        guessed_country_id, guessed_distances, direction, image_url = zip(*user_today_data)
+        guessed_country_id, guessed_distances, direction, image_url, name = zip(*user_today_data)
     else:
-        guessed_country_id, guessed_distances, direction, image_url = [], [], [], []  # Empty lists if no data
+        guessed_country_id, guessed_distances, direction, image_url, name = [], [], [], [], []  # Empty lists if no data
 
     # Format the select results to display in the template
     guessed_country_id = list(guessed_country_id)
     guessed_image_path = [url_for('static', filename=f'images/cleaned_flags/{str(x).lower()}.png') for x in guessed_country_id]
-    guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
+    #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
+    guessed_distances = [ # Put distances into buckets
+    "Scorching / Nearby" if int(round(x, 0) / 1000) < 500 else
+    "Hot / Close" if int(round(x, 0) / 1000) < 1000 else
+    "Warm / Same Viscinity" if int(round(x, 0) / 1000) < 2000 else
+    "Chilly / Distant" if int(round(x, 0) / 1000) < 5000 else
+    "Cold / Far" if int(round(x, 0) / 1000) < 10000 else
+    "Freezing / Remote"
+    for x in guessed_distances
+    ]
     direction = list(direction)
     guessed_directions_image_path = [url_for('static', filename=f'images/directions/{str(x).lower()}.png') for x in direction]
-    # Convert country IDs into Country Names
-    country_name_dict = dict(zip(locations['country'], locations['name']))
-    guesses_country_name = [country_name_dict.get(code, code) for code in guessed_country_id]
+    guesses_country_name = list(name)
+    # Other Formatting
+    win_rate = f"{win_rate:.0%}" # Win rate as a percentage
+    total_guesses = 6 - len(guessed_country_id) # Total guesses remaining
 
     # Check player game conditions
     if any(x == 0 for x in guessed_distances) == True:
@@ -804,17 +759,14 @@ def home():
     session["user_id"] = user_id
     session["game_id"] = game_id   
 
-    # Final Formatting
-    win_rate = f"{win_rate:.0%}" # Win rate as a percentage
-    total_guesses = 6 - len(guessed_country_id) # Total guesses remaining
-
+    
     print(todayscountry)
 
     # Render the template normally
     rendered_template = render_template("index.html"
                            , country = todayscountry
                            , countryurl = todayscountryurl
-                           , countries = countries_sorted
+                           , countries = countries
                            , guesses = guesses
                            , won = has_player_won
                            , lost = has_player_lost
@@ -839,26 +791,25 @@ def home():
 # 2. Guess the country
 @app.route("/guesscountry", methods=['GET', 'POST'])
 def guesscountry():
-    global conn
-    global country_index
-
+    flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
+    conn = connect_to_database(flaggle) # Connect to database
     # Get user id and game id
     user_id = session.get("user_id")  # Retrieve the ID from query parameters
     game_id = session.get("game_id")  # Retrieve the ID from query parameters
 
     # Get the country they have gussed
-    guessed_country = request.form['guessedcountry']
+    guessedcountry = request.form['guessedcountry']
+    guessedcountryindex = execute_sql_fetch_one(conn, "SELECT CountryId FROM Country WHERE Name = '" + guessedcountry + "'")
+    guessedcountryindex = guessedcountryindex[0]
+    # Get todays country
+    todayscountryindex = get_todays_country(conn)
     
     # Perform Country Compare Functions
     # Get values for the guessed country
-    guessedcountryid = locations.loc[locations['name'] == guessed_country, 'country'].values[0]
-    guessedcountrylat = float(locations.loc[locations['name'] == guessed_country, 'latitude'].values[0])
-    guessedcountrylong = float(locations.loc[locations['name'] == guessed_country, 'longitude'].values[0])
+    guessedcountryid, guessedcountrylat, guessedcountrylong, guessedcountry, guessedcountryurl = get_country_details(conn, guessedcountryindex)
 
     # Get values for todays country
-    todayscountryid = locations.at[countries[country_index], 'country']
-    todayscountrylat = float(locations.at[countries[country_index], 'latitude'])
-    todayscountrylong = float(locations.at[countries[country_index], 'longitude'])
+    todayscountryid, todayscountrylat, todayscountrylong, todayscountry, todayscountryurl = get_country_details(conn, todayscountryindex)
 
     # Calculate the distance and direction between the two countries
     coord1 = [guessedcountrylat, guessedcountrylong]
@@ -881,9 +832,10 @@ def guesscountry():
 
     # Match colours and save resulting image
     image_result = match_colours(image1, image2)
-    cv2.imwrite(os.path.join(static_folder, "guesses", "output_" + str(todayscountryid).lower() + "_" + str(guessedcountryid).lower() + ".png"), image_result[1])
-    guessed_image_result_path = url_for('static', filename=f'guesses/output_{str(todayscountryid).lower()}_{str(guessedcountryid).lower()}.png')
-    print(guessed_image_result_path)
+    cv2.imwrite(os.path.join(static_folder, "guesses", "output_" + str(int((int(todayscountryindex) / 14) * 126 + 6969 - 420)).lower() + "_" + str(guessedcountryid).lower() + ".png"), image_result[1])
+    guessed_image_result_path = url_for('static', filename=f'guesses/output_{str(int((int(todayscountryindex) / 14) * 126 + 6969 - 420)).lower()}_{str(guessedcountryid).lower()}.png')
+
+    conn.close()
 
     # Store Results in Database
     try:
@@ -913,7 +865,6 @@ def reject():
 
 ##### I N I T I A L I S A T I O N #####
 if __name__ == '__main__':
-    main()
     # If statement to prevent run when hosting in PythonAnywhere
     if 'liveconsole' not in gethostname():
         app.run() # app.run(debug=True, port = 8000) to set different port

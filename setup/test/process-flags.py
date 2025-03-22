@@ -7,7 +7,7 @@ cdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(cdir)
 sys.path.insert(0, parentdir)
 
-from src.CountryCompare import CountryCompare as cc
+from setup.CountryCompare import CountryCompare as cc
 import pandas as pd
 
 # Script used to loop through each flag to process it for comparing

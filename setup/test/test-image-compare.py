@@ -12,7 +12,7 @@ sys.path.insert(0, parentdir)
 
 import cv2
 import numpy as np
-from src.CountryCompare import CountryCompare as cc
+from setup.CountryCompare import CountryCompare as cc
 
 # Testing image comparison
 image1 = cv2.imread('src/static/images/cleaned_flags/bd.png')

@@ -12,7 +12,7 @@ sys.path.insert(0, parentdir)
 
 import cv2
 import numpy as np
-from src.CountryCompare import CountryCompare as cc
+from setup.CountryCompare import CountryCompare as cc
 
 # Testing image comparison
 
