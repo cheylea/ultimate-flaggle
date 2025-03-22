@@ -37,11 +37,11 @@
   <div class="column-mid">
     <!-- How to button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('howToPopup').style.display='block'" class="how-to topright">&#10067;</span>
+      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('howToPopup').style.display='block'; document.getElementById('myStats').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#10067;</span>
     </header>
     <!-- Stats button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('myStats').style.display='block'" class="how-to topright">&#128202;</span>
+      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('myStats').style.display='block'; document.getElementById('howToPopup').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#128202;</span>
     </header>
     <br>
     <br>
@@ -201,7 +201,7 @@
     <div class="howToPopup" id="youWin" style="display: none;">
       <!-- Close button in the top right -->
       <header style="background-color:#E9F1F7;color:#231651;">
-        <span onclick="document.getElementById('youWin').style.display='none'" class="close-button topright">&times;</span>
+        <span onclick="document.getElementById('youWin').style.display='none'; document.getElementById('howToPopup').style.display='none'; document.getElementById('myStats').style.display='none';" class="close-button topright">&times;</span>
       </header>
       <!-- Winning details and stats -->
       <p>Flag superstar - you won! It was {{ country }}. </p>
@@ -239,7 +239,7 @@
     <div class="howToPopup" id="youLose" style="display: none;">
       <!-- Close button in the top right -->
       <header style="background-color:#E9F1F7;color:#231651;">
-        <span onclick="document.getElementById('youLose').style.display='none'" class="close-button topright">&times;</span>
+        <span onclick="document.getElementById('youLose').style.display='none'; document.getElementById('howToPopup').style.display='none'; document.getElementById('myStats').style.display='none';" class="close-button topright">&times;</span>
       </header>
       <!-- Losing details and stats -->
       <p>Oh no you're out of guesses! The correct answer was {{ country }}.</p>

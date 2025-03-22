@@ -724,6 +724,7 @@ def home():
     guessed_image_path = [url_for('static', filename=f'images/cleaned_flags/{str(x).lower()}.png') for x in guessed_country_id]
     #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
     guessed_distances = [ # Put distances into buckets
+    "Found!" if int(round(x, 0) / 1000) == 0 else
     "Scorching / Nearby" if int(round(x, 0) / 1000) < 500 else
     "Hot / Close" if int(round(x, 0) / 1000) < 1000 else
     "Warm / Same Viscinity" if int(round(x, 0) / 1000) < 2000 else
@@ -740,7 +741,7 @@ def home():
     total_guesses = 6 - len(guessed_country_id) # Total guesses remaining
 
     # Check player game conditions
-    if any(x == 0 for x in guessed_distances) == True:
+    if any(x == "Found!" for x in guessed_distances) == True:
         # If the distance between countries is 0, they've got the right country and have won
         has_player_won = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
@@ -749,7 +750,7 @@ def home():
         has_player_won = 0
 
     if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
-        # If player has guessed six ttimes and none are a distance of 0, they have lost
+        # If player has guessed six times and none are a distance of 0, they have lost
         has_player_lost = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
         labels, values = get_chart_labels_values(win_stats)
@@ -803,6 +804,7 @@ def guesscountry():
 
     # Get the country they have gussed
     guessedcountry = request.form['guessedcountry']
+    guessedcountry = guessedcountry.replace("'", "''")  # Double the single quotes
     guessedcountryindex = execute_sql_fetch_one(conn, "SELECT CountryId FROM Country WHERE Name = '" + guessedcountry + "'")
     guessedcountryindex = guessedcountryindex[0]
     # Get todays country
