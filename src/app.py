@@ -47,8 +47,12 @@ THIS_FOLDER = Path(__file__).parent.resolve()
 # 9.  Get the user's max win streak
 # 10. Get the win rate
 # 11. Get the total number of games played
-# 12. Get values for the one screen stats chart
-# 13. Get all of a users stats
+# 12. Get values for the on screen stats chart
+# 13. Get todays country
+# 14. Lookup a countries details by index
+# 15. Get all of a users stats
+# 16. Cookies functions
+# 17. Country Compare
 
 # 1. User UniqueId generation 
 def get_unique_id():
@@ -397,7 +401,7 @@ def get_total_played(conn, unique_id):
 
     return data[0] if data else 0  # Return 0 if no streak found
 
-# 12. Get values for the one screen stats chart
+# 12. Get values for the on screen stats chart
 def get_chart_labels_values(win_stats):
     """Get the labels and values from a dataset returns from a sqlite database
     
