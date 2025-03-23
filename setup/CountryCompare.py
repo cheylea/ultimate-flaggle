@@ -64,8 +64,8 @@ class CountryCompare:
             primary_direction = "north" if lat_diff > 0 else "south"
             secondary_direction = "east" if lon_diff > 0 else "west"
         else:  # More movement in longitude
-            primary_direction = "east" if lon_diff > 0 else "west"
-            secondary_direction = "north" if lat_diff > 0 else "south"
+            primary_direction = "north" if lat_diff > 0 else "south"
+            secondary_direction = "east" if lon_diff > 0 else "west"
 
         # Handle cases where movement is mostly in one direction
         if abs(lat_diff) < 5:  # Almost purely east/west
@@ -73,7 +73,7 @@ class CountryCompare:
         if abs(lon_diff) < 5:  # Almost purely north/south
             direction = primary_direction
         else:
-            direction =  secondary_direction + ' ' + primary_direction
+            direction =  primary_direction + ' ' + secondary_direction
         
         return direction, distance
 

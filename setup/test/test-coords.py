@@ -16,8 +16,8 @@ from CountryCompare import CountryCompare as cc
 
 # Testing image comparison
 
-coord1 = [64.963051,-19.020835] # iceland
-coord2 = [27.514162,90.433601] # bhutan
+coord1 = [-4.038333,21.758664]
+coord2 = [23.885942,45.079162] # bhutan
 
 print(coord1)
 result = cc.check_distance(coord1, coord2)
