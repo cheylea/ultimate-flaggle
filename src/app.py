@@ -57,8 +57,8 @@ THIS_FOLDER = Path(__file__).parent.resolve()
 # 1. User UniqueId generation 
 def get_unique_id():
     """Get or create a unique ID for tracking depending on cookie consent."""
+    consent_status = session.get("consent_status")
     unique_id = request.cookies.get("unique_id")  # Check if cookie exists
-    consent_status = check_consent()  # Check if user has given consent
 
     # If unique_id exists, reset its expiry and return it
     if unique_id:  
@@ -68,7 +68,7 @@ def get_unique_id():
         return unique_id, consent_status, response
 
     # If consent has been given, store the cookie
-    if consent_status == True:
+    if consent_status == "accepted":
         if unique_id == None:
             unique_id = str(uuid.uuid4())
         response = make_response(unique_id)
@@ -77,7 +77,7 @@ def get_unique_id():
         return unique_id, consent_status, response
     
     # If consent has not been given, do not store as cookie but use a session cookie
-    if consent_status == False:  
+    if consent_status == "rejected":  
         unique_id = session.get("user_id")
         if unique_id == None:
             unique_id = str(uuid.uuid4())
@@ -616,8 +616,8 @@ def check_distance(coord1, coord2):
         primary_direction = "north" if lat_diff > 0 else "south"
         secondary_direction = "east" if lon_diff > 0 else "west"
     else:  # More movement in longitude
-        primary_direction = "east" if lon_diff > 0 else "west"
-        secondary_direction = "north" if lat_diff > 0 else "south"
+        primary_direction = "north" if lat_diff > 0 else "south"
+        secondary_direction = "east" if lon_diff > 0 else "west"
 
     # Handle cases where movement is mostly in one direction
     if abs(lat_diff) < 5:  # Almost purely east/west
@@ -625,8 +625,8 @@ def check_distance(coord1, coord2):
     if abs(lon_diff) < 5:  # Almost purely north/south
         direction = primary_direction
     else:
-        direction =  secondary_direction + ' ' + primary_direction
-        
+        direction =  primary_direction + ' ' + secondary_direction
+    
     return direction, distance
 
 def process_flags(imagepath):
@@ -694,7 +694,8 @@ def process_flags(imagepath):
 @app.route("/")
 def home():
     ### Set up the game and fetch any required user information
-    
+    #consent_status = request.json.get("cookie-consent") 
+
     flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
     conn = connect_to_database(flaggle) # Connect to database
     todayscountryindex = get_todays_country(conn) # Get todays country index
@@ -886,6 +887,14 @@ def reject():
     # Run reject cookies function
     reject_cookies()
     return redirect("/")
+
+# 5. Store the cookie consent in Flask
+@app.route('/store_consent_status', methods=['POST'])
+def store_consent_status():
+    """Save the localStorage consent status into Flask session."""
+    data = request.get_json()
+    session["consent_status"] = data.get("cookie-consent")
+    return jsonify({"message": "Consent status stored", "consent_status": session["consent_status"]})
 
 #--------------------------------------------------
 

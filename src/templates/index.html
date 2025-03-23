@@ -469,6 +469,39 @@ $(document).ready(function() {
         }, 50); // Small delay to ensure the input is available
     });
 });
+
+// If a cookie gets deleted, put it on the path to recovery instead of breaking
+function checkUniqueIdCookie(callback) {
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    
+    if (!getCookie("unique_id")) {
+        if (typeof callback === "function") {
+            callback();
+        }
+    }
+}
+
+checkUniqueIdCookie(() => {
+    document.getElementById("cookie-banner").style.display = "block";
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const consentStatus = localStorage.getItem("cookie-consent");  // Get consent status
+    fetch("/store_consent_status", {  // Send it to Flask
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ "cookie-consent": consentStatus })
+    })
+    .then(response => response.json())
+    .then(data => console.log("Consent stored in session:", data))
+    .catch(error => console.error("Error:", error));
+});
   
 </script>
 </body>
