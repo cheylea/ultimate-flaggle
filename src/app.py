@@ -689,6 +689,7 @@ def process_flags(imagepath):
 # 2. Guess the country
 # 3. Accept Cookies
 # 4. Reject Cookies
+# 5. Store the cookie consent in Flask
 
 # 1. Home page for website
 @app.route("/")
