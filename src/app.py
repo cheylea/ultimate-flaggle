@@ -605,23 +605,29 @@ def check_distance(coord1, coord2):
     coord1 -- first set of coordinates eg. 42.546245,1.601554
     coord2 -- second set of coordinates to compare to, eg. 42.546245,1.601554
     """
-
     # Use geo to get the distance and bearing based on the latitude and longitude coordinates
     compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
     distance = compare['s12']
-    bearing = compare['azi1']
 
-    # Create list of cardinals
-    cardinals = ["north", "north east", "east", "south east", "south", "south west", "west", "north west"]
-    # Adjust bearing 
-    bearing += 22.5
-    bearing = bearing % 360
+    lat_diff = coord2[0] - coord1[0]
+    lon_diff = coord2[1] - coord1[1]
 
-    # Convert bearing to index of the list
-    bearing = int(bearing / 45) # values 0 to 7
-    direction = cardinals [bearing]
+    if abs(lat_diff) > abs(lon_diff):  # More movement in latitude
+        primary_direction = "north" if lat_diff > 0 else "south"
+        secondary_direction = "east" if lon_diff > 0 else "west"
+    else:  # More movement in longitude
+        primary_direction = "east" if lon_diff > 0 else "west"
+        secondary_direction = "north" if lat_diff > 0 else "south"
 
-    return distance, compare['azi1'], bearing, direction
+    # Handle cases where movement is mostly in one direction
+    if abs(lat_diff) < 5:  # Almost purely east/west
+        direction = primary_direction
+    if abs(lon_diff) < 5:  # Almost purely north/south
+        direction = primary_direction
+    else:
+        direction =  secondary_direction + ' ' + primary_direction
+        
+    return direction, distance
 
 def process_flags(imagepath):
     """Change flag to specific colour palette
@@ -837,8 +843,8 @@ def guesscountry():
 
     distance_compare_result = check_distance(coord1, coord2)
 
-    distance = distance_compare_result[0]
-    direction = distance_compare_result[3]
+    distance = distance_compare_result[1]
+    direction = distance_compare_result[0]
 
     # Retreive the urls for the cleaned flag images for both guesses and todays country
     # Get the absolute path of the static folder
