@@ -756,8 +756,8 @@ def home():
     direction = list(direction)
     guessed_directions_image_path = [url_for('static', filename=f'images/directions/{str(x).lower()}.png') for x in direction]
     guesses_country_name = list(name)
-    # Other Formatting
-    win_rate = f"{win_rate:.0%}" # Win rate as a percentage
+    
+
     total_guesses = 6 - len(guessed_country_id) # Total guesses remaining
 
     # Check player game conditions
@@ -784,6 +784,8 @@ def home():
     session["user_id"] = user_id
     session["game_id"] = game_id   
 
+    # Other Formatting
+    win_rate = f"{win_rate:.0%}" # Win rate as a percentage
     
     print(todayscountry)
 
