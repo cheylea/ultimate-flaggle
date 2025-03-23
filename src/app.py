@@ -60,24 +60,33 @@ def get_unique_id():
     unique_id = request.cookies.get("unique_id")  # Check if cookie exists
     consent_status = check_consent()  # Check if user has given consent
 
+    # If unique_id exists, reset its expiry and return it
     if unique_id:  
-        # If unique_id exists, reset its expiry
         response = make_response(unique_id)
         response.set_cookie("unique_id", unique_id, max_age=60*60*24*365*10)
-        return unique_id, response
+        session["user_id"] = unique_id
+        return unique_id, consent_status, response
 
-    if unique_id == None:
-        # Generate a new unique_id if it doesn't exist
-        unique_id = str(uuid.uuid4())
-
-    if consent_status:  
-        # Store the cookie only if consent is given
+    # If consent has been given, store the cookie
+    if consent_status == True:
+        if unique_id == None:
+            unique_id = str(uuid.uuid4())
         response = make_response(unique_id)
         response.set_cookie("unique_id", unique_id, max_age=60*60*24*365*10)
-        return unique_id, response
+        session["user_id"] = unique_id
+        return unique_id, consent_status, response
+    
+    # If consent has not been given, do not store as cookie but use a session cookie
+    if consent_status == False:  
+        unique_id = session.get("user_id")
+        if unique_id == None:
+            unique_id = str(uuid.uuid4())
+        session["user_id"] = unique_id
+        response = make_response(unique_id)
+        return unique_id, consent_status, response
 
-    # If no cookie exists and no consent, return the new ID but don't store it
-    return unique_id, None
+    # If no cookie exists and no consent, return nothing
+    return unique_id, consent_status, None
 
 # 2. Get the users game data from today
 def get_user_game_data_today(conn, unique_id):
@@ -690,7 +699,9 @@ def home():
     countries = [x[0] for x in countries ]
     conn.close()
     # Get any existing id for users
-    user_id, response = get_unique_id()
+    user_id, consent_status, response = get_unique_id()
+    print(user_id)
+    print(consent_status)
 
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
@@ -802,6 +813,8 @@ def guesscountry():
     # Get user id and game id
     user_id = session.get("user_id")  # Retrieve the ID from query parameters
     game_id = session.get("game_id")  # Retrieve the ID from query parameters
+    print(user_id)
+    print(game_id)
 
     # Get the country they have gussed
     guessedcountry = request.form['guessedcountry']
