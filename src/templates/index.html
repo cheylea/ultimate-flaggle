@@ -327,26 +327,61 @@ checkCookieConsent();
         document.getElementById("guess-button").style.display = "none";
 
         setTimeout(() => {
-          const ctxWin = document.getElementById('userChartWin').getContext('2d');
-          new Chart(ctxWin, {
-              type: 'bar',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Total Games Won',
-                      data: values,
-                      borderWidth: 1
-                  }]
-              },
-              options: {
-                  indexAxis: 'y',
-                  responsive: true,
-                  scales: {
-                      y: { beginAtZero: true },
-                      x: { beginAtZero: true }
-                  }
-              }
-          });
+          const ctx = document.getElementById('userChartWin').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Total Games Won',
+            data: values,
+            backgroundColor: '#FF5733', // Change to desired color
+
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'black', // Makes "Total Games Won" black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black', // Black grid lines
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes Y-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            },
+            x: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black',
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes X-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        }
+    }
+});
       }, 100);
     } 
 
@@ -355,26 +390,61 @@ checkCookieConsent();
         document.getElementById("guess-button").style.display = "none";
 
         setTimeout(() => {
-          const ctxWin = document.getElementById('userChartLose').getContext('2d');
-          new Chart(ctxWin, {
-              type: 'bar',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Total Games Won',
-                      data: values,
-                      borderWidth: 1
-                  }]
-              },
-              options: {
-                  indexAxis: 'y',
-                  responsive: true,
-                  scales: {
-                      y: { beginAtZero: true },
-                      x: { beginAtZero: true }
-                  }
-              }
-          });
+          const ctx = document.getElementById('userChartLose').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Total Games Won',
+            data: values,
+            backgroundColor: '#FF5733', // Change to desired color
+
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: {
+                    color: 'black', // Makes "Total Games Won" black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black', // Black grid lines
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes Y-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            },
+            x: {
+                beginAtZero: true,
+                grid: {
+                    color: 'black',
+                    lineWidth: 1
+                },
+                ticks: {
+                    color: 'black', // Makes X-axis numbers black
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+            }
+        }
+    }
+});
       }, 100);
     } 
   };
@@ -394,7 +464,7 @@ checkCookieConsent();
   const labels = {{ labels | tojson }};
   const values = {{ values | tojson }};
 
-  const ctx = document.getElementById('userChart').getContext('2d');
+const ctx = document.getElementById('userChart').getContext('2d');
 new Chart(ctx, {
     type: 'bar',
     data: {

@@ -170,7 +170,8 @@ def get_player_guess_stats(conn, unique_id):
                         GROUP BY UniqueId, GameId 
                         HAVING MIN(Distance) = 0 
                     ) 
-                    WHERE UniqueId = ?""", (unique_id,))
+                    WHERE UniqueId = ?
+                    GROUP BY TotalGuesses""", (unique_id,))
     data = cursor.fetchall()
 
     conn.close()
@@ -203,7 +204,7 @@ def get_player_average_guess_stats(conn, unique_id):
     data = cursor.fetchone()
 
     conn.close()
-    return data[0] if data else 0
+    return round(data[0],2) if data else 0
 
 # 7. Get the average time to win for a user
 def get_player_average_win_time(conn, unique_id):
@@ -234,7 +235,7 @@ def get_player_average_win_time(conn, unique_id):
     data = cursor.fetchone()
 
     conn.close()
-    return data[0] if data else 0
+    return round(data[0],2) if data else 0
 
 # 8. Get the users current win streak
 def get_current_streak(conn, unique_id):
@@ -377,17 +378,18 @@ def get_win_rate(conn, unique_id):
             HAVING MIN(Distance) <> 0
         )
         SELECT
-            COUNT(wins.GameId) / COUNT(wins.GameId) + COUNT(losses.GameId) AS WinRate
+            wins.UniqueId,
+            CAST(COUNT(DISTINCT wins.GameId) as float) / (COUNT(DISTINCT wins.GameId) + COUNT(DISTINCT losses.GameId)) AS WinRate
         FROM Wins
         LEFT JOIN Losses ON losses.UniqueId = wins.UniqueId
-        WHERE wins.UniqueId = ? OR losses.UniqueId
+        WHERE wins.UniqueId = ? OR losses.UniqueId = ?
         GROUP BY wins.UniqueId;
-    """, (unique_id,))
+    """, (unique_id, unique_id,))
 
     data = cursor.fetchone()
     conn.close()
 
-    return data[0] if data else 0  # Return 0 if no streak found
+    return round(data[0],2) if data else 0  # Return 0 if no streak found
 
 # 11. Get the total number of games played
 def get_total_played(conn, unique_id):
