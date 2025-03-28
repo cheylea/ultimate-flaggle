@@ -389,7 +389,7 @@ def get_win_rate(conn, unique_id):
     data = cursor.fetchone()
     conn.close()
 
-    return round(float(data[0]),2) if data else 0  # Return 0 if no streak found
+    return data[0] if data else 0  # Return 0 if no streak found
 
 # 11. Get the total number of games played
 def get_total_played(conn, unique_id):
