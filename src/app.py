@@ -770,7 +770,7 @@ def home():
     else:
         has_player_won = 0
 
-    if len(guessed_country_id) == 6 and any(x == 0 for x in guessed_distances) != True:
+    if len(guessed_country_id) == 6 and any(x == "Found!" for x in guessed_distances) != True:
         # If player has guessed six times and none are a distance of 0, they have lost
         has_player_lost = 1
         win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)

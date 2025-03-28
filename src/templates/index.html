@@ -209,7 +209,22 @@
         <span onclick="document.getElementById('youWin').style.display='none'; document.getElementById('howToPopup').style.display='none'; document.getElementById('myStats').style.display='none';" class="close-button topright">&times;</span>
       </header>
       <!-- Winning details and stats -->
-      <p>Flag superstar - you won! It was {{ country }}. </p>
+       <p>You won!</p>
+        {% if total_guesses == 0 %}
+            <p>Persevering Flagster. You had us going there - that was a close one! Got there in the end though - it was {{ country }}.</p>
+        {% elif total_guesses == 1 %}
+            <p>Bit of a Flag tourist eh? Just wanted to see what nearby countries got going on. You got it though, it was {{ country }}.</p>
+        {% elif total_guesses == 2 %}
+            <p>Solid Flag Master. You got things under control. It was indeed {{ country }}.</p>
+        {% elif total_guesses == 3 %}
+            <p>Absolute Flag Superstar - you sure do know your stuff. Colour me impressed, it was {{ country }}.</p>
+        {% elif total_guesses == 4 %}
+            <p>They told of a legend...a Flag Legend...could that be you? It was {{ country }}.</p>
+        {% elif total_guesses == 5 %}
+            <p>Is this...a Flag God? In what can only be divine intervention...you got it, it was {{ country }}. You now have bragging rights for life. Use this power wisely.</p>
+        {% else %}
+            <p>It was {{ country }}.</p>
+        {% endif %}
       <p>Come back tomorrow to keep up your streak.</p>
       <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
       
