@@ -378,7 +378,6 @@ def get_win_rate(conn, unique_id):
             HAVING MIN(Distance) <> 0
         )
         SELECT
-            wins.UniqueId,
             CAST(COUNT(DISTINCT wins.GameId) as float) / (COUNT(DISTINCT wins.GameId) + COUNT(DISTINCT losses.GameId)) AS WinRate
         FROM Wins
         LEFT JOIN Losses ON losses.UniqueId = wins.UniqueId
