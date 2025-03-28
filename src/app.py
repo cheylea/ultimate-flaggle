@@ -204,7 +204,7 @@ def get_player_average_guess_stats(conn, unique_id):
     data = cursor.fetchone()
 
     conn.close()
-    return round(data[0],2) if data else 0
+    return round(float(data[0]),2) if data else 0
 
 # 7. Get the average time to win for a user
 def get_player_average_win_time(conn, unique_id):
@@ -235,7 +235,7 @@ def get_player_average_win_time(conn, unique_id):
     data = cursor.fetchone()
 
     conn.close()
-    return round(data[0],2) if data else 0
+    return round(float(data[0]),2) if data else 0
 
 # 8. Get the users current win streak
 def get_current_streak(conn, unique_id):
@@ -389,7 +389,7 @@ def get_win_rate(conn, unique_id):
     data = cursor.fetchone()
     conn.close()
 
-    return round(data[0],2) if data else 0  # Return 0 if no streak found
+    return round(float(data[0]),2) if data else 0  # Return 0 if no streak found
 
 # 11. Get the total number of games played
 def get_total_played(conn, unique_id):
