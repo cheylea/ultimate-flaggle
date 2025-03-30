@@ -119,9 +119,10 @@
                     <div class="arrow" style="transform: translate(-50%, -50%) rotate({{ direction }}deg);"></div>
                 </div>
             </div>
-         </div><br>{{ distance }}
+         </div>
+         <br>{{ distance }}
         </td>
-          <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
+          <td><img src="{{ image }}" style="max-width: 100%; height: auto;"><br>&nbsp;</td>
       </tr>
       {% endfor %}
     </table>
@@ -134,6 +135,9 @@
         <span onclick="document.getElementById('myStats').style.display='none'" class="close-button topright">&times;</span>
       </header>
       <!-- Stats -->
+       <h1>My Stats</h1>
+       <br>
+       <p>See your current statistics below.</p>
       <table class="statsTable">
         <tr>
             <th>Win Streak</th>
@@ -255,7 +259,8 @@
         <span onclick="document.getElementById('youWin').style.display='none'; document.getElementById('howToPopup').style.display='none'; document.getElementById('myStats').style.display='none';" class="close-button topright">&times;</span>
       </header>
       <!-- Winning details and stats -->
-       <p>You won!</p>
+       <h1>You won!</h1>
+       <br>
         {% if total_guesses == 0 %}
             <p>Persevering Flagster. You had us going there - that was a close one! Got there in the end though - it was {{ country }}.</p>
         {% elif total_guesses == 1 %}
@@ -308,7 +313,9 @@
         <span onclick="document.getElementById('youLose').style.display='none'; document.getElementById('howToPopup').style.display='none'; document.getElementById('myStats').style.display='none';" class="close-button topright">&times;</span>
       </header>
       <!-- Losing details and stats -->
-      <p>Oh no you're out of guesses! The correct answer was {{ country }}.</p>
+      <h1>Oh no!</h1>
+      <br>
+      <p>You're out of guesses! The correct answer was {{ country }}.</p>
       <p>Try again tomorrow.</p>
       <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
       <table class="statsTable">

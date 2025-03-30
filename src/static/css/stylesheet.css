@@ -93,6 +93,7 @@ Contents
     table-layout: fixed;
     width: 100%;
     margin-top: 3%;
+    
   }
 
   table.myTable td {
@@ -261,18 +262,17 @@ Contents
   ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   /* Outer Compass Circle */
   .compass {
-    width: 8vw;
-    height: 8vw;
+    width: 6vw;
+    height: 6vw;
     max-width: 100px;
     max-height: 100px;
-    max-width: 200px;
-    max-height: 200px;
     background-color: #F8312F;
     border-radius: 50%;
     background-image: linear-gradient(to bottom, #F8312F, #c12724);
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: auto;
   }
 
   /* Inner Compass Circle */
@@ -287,7 +287,7 @@ Contents
 
   /* Direction Labels (N, E, S, W) */
   .direction {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
     color: black;
     position: absolute;

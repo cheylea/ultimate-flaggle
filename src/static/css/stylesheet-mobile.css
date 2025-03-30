@@ -135,9 +135,10 @@ Contents
     background-color: #E9F1F7;
     position: absolute;
     left: 50%;
-    transform: translate(-50%, -45%);
+    top: 10%;
+    transform: translate(-50%);
     text-align: center;
-    padding: 2% 2% 2% 2%;
+    padding: 3% 2% 2% 2%;
     box-shadow: 10px 10px 5px 2px rgba(0, 0, 0, 0.2);
     border-radius: 15px 15px 15px 15px;
   }
@@ -255,8 +256,90 @@ Contents
   }
 
 
-/* 4. Footer
+/* 5. Compass
+  ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+  /* Outer Compass Circle */
+  .compass {
+    width: 15vw;
+    height: 15vw;
+    max-width: 200px;
+    max-height: 200px;
+    background-color: #F8312F;
+    border-radius: 50%;
+    background-image: linear-gradient(to bottom, #F8312F, #c12724);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+  }
+
+  /* Inner Compass Circle */
+  .compass-inner {
+    width: 80%; /* 80% of the outer circle */
+    height: 80%;
+    background-color: white;
+    border-radius: 50%;
+    border: 2% solid #C5C5C5;
+    position: relative;
+  }
+
+  /* Direction Labels (N, E, S, W) */
+  .direction {
+    font-size: 11px;
+    font-weight: bold;
+    color: black;
+    position: absolute;
+  }
+
+  /* Positioning N, E, S, W */
+  .north { top: 5%; left: 50%; transform: translateX(-50%); }
+  .east { right: 5%; top: 50%; transform: translateY(-50%); }
+  .south { bottom: 5%; left: 50%; transform: translateX(-50%); }
+  .west { left: 5%; top: 50%; transform: translateY(-50%); }
+
+  /* Main Arrow (Thin Middle Line) */
+  .arrow {
+    width: 0.5vw;
+    height: 0vw;
+    background-color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin: center;
+  }
+
+  /* Top Arrow */
+  .arrow::before {
+    content: "";
+    position: absolute;
+    top: -3.5vw;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 1vw solid transparent;
+    border-right: 1vw solid transparent;
+    border-bottom: 3.5vw solid #F8312F;
+  }
+
+  /* Bottom Arrow */
+  .arrow::after {
+    content: "";
+    position: absolute;
+    bottom: -3.5vw;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 1vw solid transparent;
+    border-right: 1vw solid transparent;
+    border-top: 3.5vw solid black;
+  }
+
+/* 5. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+
   .footer {
     background-color: #F8312F;
     padding: 10px;
