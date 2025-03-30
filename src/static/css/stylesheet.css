@@ -273,6 +273,7 @@ Contents
     justify-content: center;
     align-items: center;
     margin: auto;
+    box-shadow: 0 0 2px 1px #727272;
   }
 
   /* Inner Compass Circle */
@@ -280,8 +281,9 @@ Contents
     width: 80%; /* 80% of the outer circle */
     height: 80%;
     background-color: white;
+    background-image: linear-gradient(to left bottom, white, #D3D3D3);
     border-radius: 50%;
-    border: 2% solid #C5C5C5;
+    border: 1px solid #C5C5C5;
     position: relative;
   }
 
