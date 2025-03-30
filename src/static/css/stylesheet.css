@@ -19,7 +19,7 @@ Contents
     flex-direction: column;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
-    background-image: url("/static//images/ocean.png");
+    background-image: url("/static//images/ocean2.png");
     background-position: top;
   }
 
@@ -29,9 +29,9 @@ Contents
     padding: 30px;
     padding-bottom: 40px;
     text-align: center;
-    font-size: 35px;
+    font-size: 5em;
     color: #E9F1F7;
-    text-shadow: 2px 2px #F8312F;
+    text-shadow: 5px 5px #F8312F;
   }
   
 /* 3. Body
@@ -51,9 +51,9 @@ Contents
     padding: 20px;
     text-align: center;
     background-color:#9AE05C;
-    background-image: url("/static//images/grass.png");
+    background-image: url("/static//images/grass5.png");
     border-radius: 15px 15px 15px 15px;
-    box-shadow: 0 0 30px #ffffff;
+    box-shadow: 0 0 10px 2px #ffffff;
   }
 
   .column-mid .how-to{
@@ -79,8 +79,8 @@ Contents
   .top-text {
     color:white;
     font-weight:bold;
-    margin-left: 20%;
-    margin-right: 20%;
+    margin-left: 15%;
+    margin-right: 15%;
     margin-bottom: 2%;
     font-size: 16px;
   }
@@ -130,8 +130,8 @@ Contents
   /* Pop up stylings */
   .howToPopup {
     display: none;
-    width: 50%;
-    max-width: 500px;
+    width: 75%;
+    max-width: 1000px;
     background-color: #E9F1F7;
     position: absolute;
     top: 50%;
@@ -151,7 +151,9 @@ Contents
   .howToPopup .circle {
     border-radius: 50%;
     float: left;
-    padding: 6%;
+    margin-left:0.5%;
+    position: relative;
+    padding: calc(90% / 30);
   }
 
   .howToPopup .p {
@@ -255,14 +257,95 @@ Contents
     width: 100px;
   }
 
+  /* 5. Compass
+  ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
+  /* Outer Compass Circle */
+  .compass {
+    width: 8vw;
+    height: 8vw;
+    max-width: 100px;
+    max-height: 100px;
+    max-width: 200px;
+    max-height: 200px;
+    background-color: #F8312F;
+    border-radius: 50%;
+    background-image: linear-gradient(to bottom, #F8312F, #c12724);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-/* 4. Footer
+  /* Inner Compass Circle */
+  .compass-inner {
+    width: 80%; /* 80% of the outer circle */
+    height: 80%;
+    background-color: white;
+    border-radius: 50%;
+    border: 2% solid #C5C5C5;
+    position: relative;
+  }
+
+  /* Direction Labels (N, E, S, W) */
+  .direction {
+    font-size: 12px;
+    font-weight: bold;
+    color: black;
+    position: absolute;
+  }
+
+  /* Positioning N, E, S, W */
+  .north { top: 5%; left: 50%; transform: translateX(-50%); }
+  .east { right: 5%; top: 50%; transform: translateY(-50%); }
+  .south { bottom: 5%; left: 50%; transform: translateX(-50%); }
+  .west { left: 5%; top: 50%; transform: translateY(-50%); }
+
+  /* Main Arrow (Thin Middle Line) */
+  .arrow {
+    width: 0.5vw;
+    height: 0vw;
+    background-color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transform-origin: center;
+  }
+
+  /* Top Arrow */
+  .arrow::before {
+    content: "";
+    position: absolute;
+    top: -1.75vw;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 0.4vw solid transparent;
+    border-right: 0.4vw solid transparent;
+    border-bottom: 1.75vw solid #F8312F;
+  }
+
+  /* Bottom Arrow */
+  .arrow::after {
+    content: "";
+    position: absolute;
+    bottom: -1.75vw;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 0.4vw solid transparent;
+    border-right: 0.4vw solid transparent;
+    border-top: 1.75vw solid black;
+  }
+
+/* 5. Footer
 ––––––––––––––––––––––––––––––––––––––––––––––––––-------------------- */
   .footer {
     background-color: #F8312F;
     padding: 10px;
     text-align: center;
-    margin-top: auto;
+    margin-top: 0;
     font-weight: bolder;
     color: #ffffff;
     font-size: 12px;
@@ -272,5 +355,10 @@ Contents
     text-decoration: underline;
     color: #ffffff
   }
+
+  .footer br {
+    display: none;
+  }
+  
   
   

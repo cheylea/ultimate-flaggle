@@ -609,24 +609,33 @@ def check_distance(coord1, coord2):
     # Use geo to get the distance and bearing based on the latitude and longitude coordinates
     compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
     distance = compare['s12']
+    direction = compare['azi1']
+    
+    # Normalise the direction
+    if direction < 0:
+        direction += 360
 
+    # Check if not making map sense
     lat_diff = coord2[0] - coord1[0]
     lon_diff = coord2[1] - coord1[1]
-
     if abs(lat_diff) > abs(lon_diff):  # More movement in latitude
         primary_direction = "north" if lat_diff > 0 else "south"
         secondary_direction = "east" if lon_diff > 0 else "west"
     else:  # More movement in longitude
         primary_direction = "north" if lat_diff > 0 else "south"
         secondary_direction = "east" if lon_diff > 0 else "west"
-
+    
     # Handle cases where movement is mostly in one direction
-    if abs(lat_diff) < 5:  # Almost purely east/west
-        direction = primary_direction
-    if abs(lon_diff) < 5:  # Almost purely north/south
-        direction = primary_direction
-    else:
-        direction =  primary_direction + ' ' + secondary_direction
+    if direction > 0 and direction < 90 and primary_direction != "north":
+        direction += 90
+    # Handle cases where movement is mostly in one direction
+    if direction > 270 and direction < 180 and primary_direction != "north":
+        direction -= 90
+    if direction > 90 and direction < 180 and primary_direction != "south":
+        direction -= 90
+    # Handle cases where movement is mostly in one direction
+    if direction > 180 and direction < 270 and primary_direction != "south":
+        direction += 90
     
     return direction, distance
 
@@ -746,16 +755,15 @@ def home():
     #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
     guessed_distances = [ # Put distances into buckets
     "Found!" if int(round(x, 0) / 1000) == 0 else
-    "Scorching / Nearby" if int(round(x, 0) / 1000) < 500 else
-    "Hot / Close" if int(round(x, 0) / 1000) < 1000 else
+    "Scorching / Very Close" if int(round(x, 0) / 1000) < 500 else
+    "Hot / Near" if int(round(x, 0) / 1000) < 1000 else
     "Warm / Same Viscinity" if int(round(x, 0) / 1000) < 2000 else
     "Chilly / Distant" if int(round(x, 0) / 1000) < 5000 else
-    "Cold / Far" if int(round(x, 0) / 1000) < 10000 else
+    "Cold / Quite Far" if int(round(x, 0) / 1000) < 10000 else
     "Freezing / Remote"
     for x in guessed_distances
     ]
     direction = list(direction)
-    guessed_directions_image_path = [url_for('static', filename=f'images/directions/{str(x).lower()}.png') for x in direction]
     guesses_country_name = list(name)
     
 
@@ -779,7 +787,7 @@ def home():
         has_player_lost = 0
 
     # Zip the lists together before passing to the template
-    guesses = zip(guessed_image_path, guesses_country_name, guessed_distances, guessed_directions_image_path, image_url)
+    guesses = zip(guessed_image_path, guesses_country_name, guessed_distances, direction, image_url)
     
     # Set session ids
     session["user_id"] = user_id

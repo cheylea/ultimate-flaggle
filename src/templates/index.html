@@ -31,6 +31,10 @@
      crossorigin="anonymous"></script>
 </head>
 <body>
+<!-- Footer -->
+<div class="footer">
+    <p><a href="{{ url_for('static',filename='policies/thankyou.txt') }}" target="_blank">Thank yous</a>. All rights reserved © 🌸 <a href="https://cheylea.github.io/" target="_blank">Cheylea Hopkinson</a> 2025. <br> Contact on 🔗 <a href="https://www.linkedin.com/in/cheyleahopkinson/" target="_blank">LinkedIn</a>. ☕ <a href="https://www.ko-fi.com/cheylea" target="_blank">Buy me a coffee?</a></a></p>
+  </div>
 <!-- Header -->
 <div class="header">
    <h2>Ultimate Flaggle</h2>
@@ -42,11 +46,11 @@
   <div class="column-mid">
     <!-- How to button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('howToPopup').style.display='block'; document.getElementById('myStats').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#10067;</span>
+      <span style="border-radius: 50%; margin: 2px; padding: 0.5%;" onclick="document.getElementById('howToPopup').style.display='block'; document.getElementById('myStats').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#10067;</span>
     </header>
     <!-- Stats button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px;" onclick="document.getElementById('myStats').style.display='block'; document.getElementById('howToPopup').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#128202;</span>
+      <span style="border-radius: 50%; margin: 2px; padding: 0.5%;" onclick="document.getElementById('myStats').style.display='block'; document.getElementById('howToPopup').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#128202;</span>
     </header>
     <br>
     <br>
@@ -105,7 +109,18 @@
       {% for flag, country, distance, direction, image in guesses %}
       <tr>
          <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"><br>{{ country }}</td>
-          <td><img src="{{ direction }}" style="max-width: 35%; height: auto;"><br>{{ distance }}</td>
+         <td>
+            <div class="compass">
+                <div class="compass-inner">
+                    <div class="direction north">N</div>
+                    <div class="direction east">E</div>
+                    <div class="direction south">S</div>
+                    <div class="direction west">W</div>
+                    <div class="arrow" style="transform: translate(-50%, -50%) rotate({{ direction }}deg);"></div>
+                </div>
+            </div>
+         </div><br>{{ distance }}
+        </td>
           <td><img src="{{ image }}" style="max-width: 100%; height: auto;"></td>
       </tr>
       {% endfor %}
@@ -152,29 +167,63 @@
         <span onclick="document.getElementById('howToPopup').style.display='none'" class="close-button topright">&times;</span>
       </header>
       <!-- Show icon on the page -->
-      <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="ultimate flaggle logo">
+      <img style="max-width: 80px" src="{{ url_for('static', filename='images/favicon.png') }}" alt="ultimate flaggle logo">
       <!-- How to details -->
       <h1>How does it work?</h1>
       <br>
       <p>
-        This version of flaggle works by combining the approachs of <a href="https://flagle.gg/" target="_blank">FLAGLE</a> and <a href="https://www.flaggle.net/" target="_blank">Flaggle</a>.
+        This version of flaggle works by combining the approachs of <a href="https://flagle.gg/" target="_blank">FLAGLE</a> and <a href="https://www.flaggle.net/" target="_blank">Flaggle</a>. To play, guess a country to start. Once you start guessing, you are shown hints for how close you are to the correct country to guess. Hints are the distance, direction and flag colour comparison.
+        </p>
         <br>
-        To play, guess a country to start. Once you start guessing, you are shown hints for how close you are to the correct country to guess. Hints are the distance, direction and flag colour comparison.
-        The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.
+        <h2 style="font-size: 20px;">Distance</h2>
+        <p>Distance in calculated between the centre points of the coordinates between each country and is then divided into buckets.</p>
+        <br>
+        <table class="statsTable">
+            <tr>
+                <th>Distance</th>
+                <th>Bucket</th>
+            </tr>
+            <tr>
+                <td>Scorching / Very Close</td>
+                <td>less than 500km</td>
+            </tr>
+            <tr>
+                <td>Hot / Near</td>
+                <td>betweeen 500km and 1,000km</td>
+            </tr>
+            <tr>
+                <td>Warm / Same Viscinity</td>
+                <td>between 1,000km and 2,000km</td>
+            </tr>
+            <tr>
+                <td>Chilly / Distant</td>
+                <td>between 2,000km and 5,000km</td>
+            </tr>
+            <tr>
+                <td>Cold / Quite Far</td>
+                <td>between 5,000km and 10,000km</td>
+            </tr>
+            <tr>
+                <td>Freezing / Remote</td>
+                <td>over 10,000km</td>
+            </tr>
+          </table>
+        <br>
+        <h2 style="font-size: 20px;">Direction</h2>
+        <p>The compass points to the direction from the guessed country to the answered country. This is currently rounded so may not be 100% accurate.</p>
+        <br>
+        <h2 style="font-size: 20px;">Colour Comparison</h2>
+        <p> The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.
         See the below example for guessing China, when the answer is the United States.
       </p>
-      <div>
-        <div class="column-left" ></div>
-        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/cleaned_flags/cn.png') }}" alt="example flag difference">
-        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/output_us_cn.png') }}" alt="example flag difference">
-        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%;" src="{{ url_for('static', filename='images/cleaned_flags/us.png') }}" alt="example flag difference">
-        <div class="column-left" ></div>
+      <div style="min-width: 100%">
+        <div style="float: left; margin-top: 1%; width: 17%" ></div>
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%; width: 20%" src="{{ url_for('static', filename='images/cleaned_flags/cn.png') }}" alt="example flag difference">
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%; width: 20%" src="{{ url_for('static', filename='images/output_us_cn.png') }}" alt="example flag difference">
+        <img style="float: left; margin-top: 1%; margin-left: 1%; margin-right: 1%; width: 20%" src="{{ url_for('static', filename='images/cleaned_flags/us.png') }}" alt="example flag difference">
+        <div style="float: left; margin-top: 1%; width: 17%" ></div>
       </div>
-      
-      <p>
-        <br>
-        <br>
-        <br>
+      <p style ="clear: both;">
         <br>
         <br>
         Please note, flags have been processed to be the same dimensions and only contain colour shades from a set of 15 colours. This means flags may not look exactly identical to the original flag, so do bear that in mind when playing.
@@ -182,7 +231,7 @@
       <br>
       <p> Colours used to process flags:</p>
       <br>
-      <p><div class="circle" style="background: #000000;"></div>
+        <div class="circle" style="background: #000000;"></div>
         <div class="circle" style="background: #0F41A3;"></div>
         <div class="circle" style="background: #00AFCA;"></div>
         <div class="circle" style="background: #8CB9DA;"></div>
@@ -190,16 +239,13 @@
         <div class="circle" style="background: #CE2424;"></div>
         <div class="circle" style="background: #F48E93;"></div>
         <div class="circle" style="background: #007934;"></div>
-      </p>
-      <p>
-        <div class="circle" style="background: #FAF341; margin-left:calc(100% / 20);"></div>
+        <div class="circle" style="background: #FAF341;"></div>
         <div class="circle" style="background: #EACB3F;"></div>
         <div class="circle" style="background: #ff8000;"></div>
         <div class="circle" style="background: #61362E;"></div>
         <div class="circle" style="background: #a0a0a0;"></div>
         <div class="circle" style="background: #DECDB6;"></div>
         <div class="circle" style="background: #FFFFFF;"></div>
-      </p>
     </div>
 
     <!-- Winning pop up-->
@@ -303,10 +349,7 @@
   <a onclick="rejectCookies()" href="{{ url_for('reject') }}" class="cookie-button-reject">Reject</a>
 </div>
 
-<!-- Footer -->
-<div class="footer">
-  <p><a href="{{ url_for('static',filename='policies/thankyou.txt') }}" target="_blank">Thank yous</a>. All rights reserved © 🌸 <a href="https://cheylea.github.io/" target="_blank">Cheylea Hopkinson</a> 2025. Contact on 🔗 <a href="https://www.linkedin.com/in/cheyleahopkinson/" target="_blank">LinkedIn</a>. ☕ <a href="https://www.ko-fi.com/cheylea" target="_blank">Buy me a coffee?</a></a></p>
-</div>
+
 
 <script>
   function acceptCookies() {

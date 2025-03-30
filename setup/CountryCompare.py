@@ -7,6 +7,7 @@ from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
+import math
 
 class CountryCompare:
     # Function for cross references colours for two cleaned flags
@@ -56,9 +57,16 @@ class CountryCompare:
         # Use geo to get the distance and bearing based on the latitude and longitude coordinates
         compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
         distance = compare['s12']
+        direction = compare['azi1']
+        
+        # Normalise the direction
+        if direction < 0:
+            direction += 360
 
+        # Check if not making map sense
         lat_diff = coord2[0] - coord1[0]
         lon_diff = coord2[1] - coord1[1]
+
 
         if abs(lat_diff) > abs(lon_diff):  # More movement in latitude
             primary_direction = "north" if lat_diff > 0 else "south"
@@ -66,15 +74,20 @@ class CountryCompare:
         else:  # More movement in longitude
             primary_direction = "north" if lat_diff > 0 else "south"
             secondary_direction = "east" if lon_diff > 0 else "west"
+        
 
         # Handle cases where movement is mostly in one direction
-        if abs(lat_diff) < 5:  # Almost purely east/west
-            direction = primary_direction
-        if abs(lon_diff) < 5:  # Almost purely north/south
-            direction = primary_direction
-        else:
-            direction =  primary_direction + ' ' + secondary_direction
-        
+        if direction > 0 and direction < 90 and primary_direction != "north":
+            direction += 90
+        # Handle cases where movement is mostly in one direction
+        if direction > 270 and direction < 180 and primary_direction != "north":
+            direction -= 90
+        if direction > 90 and direction < 180 and primary_direction != "south":
+            direction -= 90
+        # Handle cases where movement is mostly in one direction
+        if direction > 180 and direction < 270 and primary_direction != "south":
+            direction += 90
+
         return direction, distance
 
     def process_flags(imagepath):
