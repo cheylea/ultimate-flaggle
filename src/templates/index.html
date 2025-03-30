@@ -46,11 +46,11 @@
   <div class="column-mid">
     <!-- How to button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px; padding: 0.5%;" onclick="document.getElementById('howToPopup').style.display='block'; document.getElementById('myStats').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#10067;</span>
+      <span style="border-radius: 50%; margin: 2px; padding: 1%;" onclick="document.getElementById('howToPopup').style.display='block'; document.getElementById('myStats').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#10067;</span>
     </header>
     <!-- Stats button -->
     <header style="background-color:#E9F1F7;">
-      <span style="border-radius: 50%; margin: 2px; padding: 0.5%;" onclick="document.getElementById('myStats').style.display='block'; document.getElementById('howToPopup').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#128202;</span>
+      <span style="border-radius: 50%; margin: 2px; padding: 1%;" onclick="document.getElementById('myStats').style.display='block'; document.getElementById('howToPopup').style.display='none'; document.getElementById('youWin').style.display='none'; document.getElementById('youLose').style.display='none';" class="how-to topright">&#128202;</span>
     </header>
     <br>
     <br>
@@ -214,7 +214,10 @@
           </table>
         <br>
         <h2 style="font-size: 20px;">Direction</h2>
-        <p>The red end of the compass points to the direction from the guessed country to the answered country. This is dynamic and based on the calculated angle between the centre latitude and longitude points. Efforts have been made to account for the shortest distance problem (ie pointing off the edge of the map to wrap around instead of logically) but may not be completely accurate.</p>
+        <p>The red end of the compass points to the direction from the guessed country to the answered country.
+            <br>This is dynamic and based on the calculated angle between the latitude and longitude coordinates for the countries. This should give the logical direction on the map, however there can be limitations if the coords are not quite the logical centre of the country.
+            <br>Efforts have been made to account for this, as well as the shortest distance problem (ie pointing off the edge of the map to wrap around instead of logically on the map) and calculating the direction if going straight rather than the earth's curvature.
+            <br>However, this may not be completely accurate so do be aware of this and please report any weird results!</p>
         <br>
         <h2 style="font-size: 20px;">Colour Comparison</h2>
         <p> The flag colour comparison works by comparing the pixel colours in the same position and will highlight green when they match.

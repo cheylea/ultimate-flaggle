@@ -25,6 +25,8 @@ from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
+from pyproj import Proj
+import numpy as np
 
 # Required for using Database Functions
 import sqlite3
@@ -601,7 +603,6 @@ def match_colours(image1, image2):
     
 def check_distance(coord1, coord2):
     """Compare two sets of lat-long coordinates and return the distance and direction between them
-
     Key arguments
     coord1 -- first set of coordinates eg. 42.546245,1.601554
     coord2 -- second set of coordinates to compare to, eg. 42.546245,1.601554
@@ -609,21 +610,30 @@ def check_distance(coord1, coord2):
     # Use geo to get the distance and bearing based on the latitude and longitude coordinates
     compare = geo.WGS84.Inverse(coord1[0], coord1[1], coord2[0], coord2[1])
     distance = compare['s12']
-    direction = compare['azi1']
+    curved_direction = compare['azi1']
     
     # Normalise the direction
-    if direction < 0:
-        direction += 360
-
+    if curved_direction < 0:
+        curved_direction += 360
+    
+    ### Change to rhumb line bearing
+    # Calculate the rhumb line bearing (loxodrome)
+    delta_lon = np.radians(coord2[1] - coord1[1])
+    phi1 = np.radians(coord1[0])
+    phi2 = np.radians(coord2[0])
+    delta_psi = np.log(np.tan(np.pi / 4 + phi2 / 2) / np.tan(np.pi / 4 + phi1 / 2))
+    rhumb_bearing = np.degrees(np.arctan2(delta_lon, delta_psi)) % 360
+    direction = rhumb_bearing
+    
     # Check if not making map sense
     lat_diff = coord2[0] - coord1[0]
     lon_diff = coord2[1] - coord1[1]
     if abs(lat_diff) > abs(lon_diff):  # More movement in latitude
         primary_direction = "north" if lat_diff > 0 else "south"
-        secondary_direction = "east" if lon_diff > 0 else "west"
+        #secondary_direction = "east" if lon_diff > 0 else "west"
     else:  # More movement in longitude
         primary_direction = "north" if lat_diff > 0 else "south"
-        secondary_direction = "east" if lon_diff > 0 else "west"
+        #secondary_direction = "east" if lon_diff > 0 else "west"
     
     # Handle cases where movement is mostly in one direction
     if direction > 0 and direction < 90 and primary_direction != "north":
@@ -636,7 +646,6 @@ def check_distance(coord1, coord2):
     # Handle cases where movement is mostly in one direction
     if direction > 180 and direction < 270 and primary_direction != "south":
         direction += 90
-    
     return direction, distance
 
 def process_flags(imagepath):
