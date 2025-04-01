@@ -5,6 +5,7 @@
 import os
 import datetime as dt
 from datetime import date
+from zoneinfo import ZoneInfo
 from socket import gethostname # for PythonAnywhere
 from apscheduler.schedulers.background import BackgroundScheduler # for refreshing the page
 
@@ -25,7 +26,6 @@ from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
-from pyproj import Proj
 import numpy as np
 
 # Required for using Database Functions
@@ -99,10 +99,10 @@ def get_user_game_data_today(conn, unique_id):
     uniqueid -- unique id for a given user
     """
     cursor = conn.cursor()
-
+    today = dt.datetime.now(ZoneInfo("Europe/London")).date()
     cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
                       JOIN Country c ON c.Country = gd.Country
-                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, date.today()))
+                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, today))
     data = cursor.fetchall()
 
     conn.close()
@@ -144,7 +144,8 @@ def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction,
     INSERT INTO GameDetail (UniqueId, GameId, DateTimeGuessed, Country, Distance, Direction, ComparedImageUrl)
     VALUES (?, ?, ?, ?, ?, ?, ?);
     """
-    cursor.execute(sql, (unique_id, game_id, dt.datetime.now(), country_id, distance, direction, image_url))
+    now = dt.datetime.now(ZoneInfo("Europe/London"))
+    cursor.execute(sql, (unique_id, game_id, now, country_id, distance, direction, image_url))
     conn.commit()
     cursor.close()
 
@@ -438,7 +439,8 @@ def get_todays_country(conn):
     conn -- sqlite connection
     sql -- select string of sqlite code
     """
-    sql = "SELECT CountryId FROM Answer WHERE Date = '" + str(date.today()) + "'"
+    local_date = dt.datetime.now(ZoneInfo("Europe/London")).date()
+    sql = f"SELECT CountryId FROM Answer WHERE Date = '{local_date}'"
     c = conn.cursor()
     c.execute(sql)
     result = c.fetchone()
