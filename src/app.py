@@ -102,9 +102,10 @@ def get_user_game_data_today(conn, unique_id):
     today = dt.datetime.now(ZoneInfo("Europe/London")).date()
     cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
                       JOIN Country c ON c.Country = gd.Country
-                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, today))
+                      WHERE UniqueId = ? AND date(datetime(DateTimeGuessed, 'localtime')) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, today))
     data = cursor.fetchall()
-
+    print(today)
+    print(data)
     conn.close()
     return data
 
@@ -256,7 +257,7 @@ def get_current_streak(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0
@@ -315,7 +316,7 @@ def get_max_streak(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0 -- Only winning games
@@ -365,7 +366,7 @@ def get_win_rate(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0
@@ -375,7 +376,7 @@ def get_win_rate(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(DATE(DateTimeGuessed)) AS DayPlayed
+                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) <> 0
