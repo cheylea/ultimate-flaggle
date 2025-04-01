@@ -8,7 +8,6 @@ import cv2
 import scipy.spatial as sp
 from PIL import Image
 import math
-from pyproj import Proj
 import numpy as np
 
 class CountryCompare:
