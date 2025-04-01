@@ -56,12 +56,36 @@ total_days = [date.today() + timedelta(days=1) + timedelta(days=x) for x in tota
 conn = db.connect_to_database(flaggle)
 
 # Remove going forward countries
-today = date.today()
-sql = f"DELETE FROM Answer WHERE Date > '{today}'"
+#today = date.today()
+#sql = f"DELETE FROM Answer WHERE Date > '{today}'"
+#
+#db.execute_sql(conn, sql)
+#
+#for answer, day in zip(answers, total_days):
+#    sql = "INSERT INTO Answer (CountryId, Date) VALUES (" + str(answer) + ", '" + str(day) + "')"
+#    db.execute_sql(conn, sql)
+#print("Finished adding answers")
 
-db.execute_sql(conn, sql)
 
-for answer, day in zip(answers, total_days):
-    sql = "INSERT INTO Answer (CountryId, Date) VALUES (" + str(answer) + ", '" + str(day) + "')"
-    db.execute_sql(conn, sql)
-print("Finished adding answers")
+# Countries
+drop_table_country = """DROP TABLE IF EXISTS Country; """
+create_table_country = """ CREATE TABLE IF NOT EXISTS Answer (
+                            CountryId int PRIMARY KEY AUTOINCREMENT,
+                            Country text,
+                            Latitude,
+                            Longitude,
+                            Name
+                        ); """
+
+# Make connection to flaggle database file
+conn = db.connect_to_database(flaggle)
+
+if conn is not None:
+    # Execute required sql
+    db.execute_sql(conn, drop_table_country)
+    db.execute_sql(conn, create_table_country)
+    df.to_sql("Country", conn, if_exists='replace', index=False)
+    print("Database initialised.")
+    
+else:
+    print("Error!")
