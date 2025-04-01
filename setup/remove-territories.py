@@ -56,7 +56,9 @@ total_days = [date.today() + timedelta(days=1) + timedelta(days=x) for x in tota
 conn = db.connect_to_database(flaggle)
 
 # Remove going forward countries
-sql = 'DELETE FROM Answer WHERE Date > ''2025-04-01;'''
+today = date.today()
+sql = f"DELETE FROM Answer WHERE Date > '{today}'"
+
 db.execute_sql(conn, sql)
 
 for answer, day in zip(answers, total_days):
