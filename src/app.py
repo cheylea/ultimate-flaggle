@@ -5,7 +5,6 @@
 import os
 import datetime as dt
 from datetime import date
-from zoneinfo import ZoneInfo
 from socket import gethostname # for PythonAnywhere
 from apscheduler.schedulers.background import BackgroundScheduler # for refreshing the page
 
@@ -26,6 +25,7 @@ from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
+from pyproj import Proj
 import numpy as np
 
 # Required for using Database Functions
@@ -99,13 +99,12 @@ def get_user_game_data_today(conn, unique_id):
     uniqueid -- unique id for a given user
     """
     cursor = conn.cursor()
-    today = dt.datetime.now(ZoneInfo("Europe/London")).date()
+
     cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
                       JOIN Country c ON c.Country = gd.Country
-                      WHERE UniqueId = ? AND date(datetime(DateTimeGuessed, 'localtime')) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, today))
+                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, date.today()))
     data = cursor.fetchall()
-    print(today)
-    print(data)
+
     conn.close()
     return data
 
@@ -145,8 +144,7 @@ def insert_game_guess(conn, unique_id, game_id, country_id, distance, direction,
     INSERT INTO GameDetail (UniqueId, GameId, DateTimeGuessed, Country, Distance, Direction, ComparedImageUrl)
     VALUES (?, ?, ?, ?, ?, ?, ?);
     """
-    now = dt.datetime.now(ZoneInfo("Europe/London"))
-    cursor.execute(sql, (unique_id, game_id, now, country_id, distance, direction, image_url))
+    cursor.execute(sql, (unique_id, game_id, dt.datetime.now(), country_id, distance, direction, image_url))
     conn.commit()
     cursor.close()
 
@@ -257,7 +255,7 @@ def get_current_streak(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0
@@ -316,7 +314,7 @@ def get_max_streak(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0 -- Only winning games
@@ -366,7 +364,7 @@ def get_win_rate(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) = 0
@@ -376,7 +374,7 @@ def get_win_rate(conn, unique_id):
                 UniqueId,
                 GameId,
                 MIN(Distance) AS ClosestDistance,
-                MIN(date(datetime(DateTimeGuessed, 'localtime'))) AS DayPlayed
+                MIN(DATE(DateTimeGuessed)) AS DayPlayed
             FROM GameDetail
             GROUP BY UniqueId, GameId
             HAVING MIN(Distance) <> 0
@@ -440,8 +438,7 @@ def get_todays_country(conn):
     conn -- sqlite connection
     sql -- select string of sqlite code
     """
-    local_date = dt.datetime.now(ZoneInfo("Europe/London")).date()
-    sql = f"SELECT CountryId FROM Answer WHERE Date = '{local_date}'"
+    sql = "SELECT CountryId FROM Answer WHERE Date = '" + str(date.today()) + "'"
     c = conn.cursor()
     c.execute(sql)
     result = c.fetchone()
