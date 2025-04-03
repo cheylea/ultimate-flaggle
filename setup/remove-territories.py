@@ -23,7 +23,8 @@ df = pd.DataFrame(locations)
 r.seed(10)
 # Get details about the locations
 # Generate list of country index for next 10
-countries = list(range(0, len(df))) # List out index to select "random" country
+countries = df['CountryId'].values.tolist() # List out index to select "random" country
+print(countries)
 countries = countries * 100
 
 def restricted_shuffle(countries):
@@ -50,21 +51,21 @@ def restricted_shuffle(countries):
 
 answers = restricted_shuffle(countries)
 total_days = list(range(0, len(answers)))
-total_days = [date.today() + timedelta(days=1) + timedelta(days=x) for x in total_days]
+total_days = [date.today() + timedelta(days=x) for x in total_days]
 
 # Insert data
 conn = db.connect_to_database(flaggle)
 
 # Remove going forward countries
-#today = date.today()
-#sql = f"DELETE FROM Answer WHERE Date > '{today}'"
-#
-#db.execute_sql(conn, sql)
-#
-#for answer, day in zip(answers, total_days):
-#    sql = "INSERT INTO Answer (CountryId, Date) VALUES (" + str(answer) + ", '" + str(day) + "')"
-#    db.execute_sql(conn, sql)
-#print("Finished adding answers")
+today = date.today()
+sql = f"DELETE FROM Answer WHERE Date >= '{today}'"
+
+db.execute_sql(conn, sql)
+
+for answer, day in zip(answers, total_days):
+    sql = "INSERT INTO Answer (CountryId, Date) VALUES (" + str(answer) + ", '" + str(day) + "')"
+    db.execute_sql(conn, sql)
+print("Finished adding answers")
 
 
 # Countries
