@@ -933,6 +933,12 @@ def store_consent_status():
     session["consent_status"] = data.get("cookie-consent")
     return jsonify({"message": "Consent status stored", "consent_status": session["consent_status"]})
 
+# Image cache
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 60 * 60 * 24  # Cache images for 24 hours
+    return response
+
 #--------------------------------------------------
 
 ##### I N I T I A L I S A T I O N #####
