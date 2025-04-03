@@ -25,7 +25,6 @@ from geographiclib.geodesic import Geodesic as geo
 import cv2
 import scipy.spatial as sp
 from PIL import Image
-from pyproj import Proj
 import numpy as np
 
 # Required for using Database Functions
@@ -230,7 +229,7 @@ def get_player_average_win_time(conn, unique_id):
                             (JULIANDAY(MAX(DateTimeGuessed)) - JULIANDAY(MIN(DateTimeGuessed))) * 24 * 60 AS TimeTakenToFinishInMinutes
                         FROM GameDetail
                         GROUP BY UniqueId, GameId
-                        HAVING MIN(Distance) = 0
+                        HAVING MIN(Distance) = 0 AND (JULIANDAY(MAX(DateTimeGuessed)) - JULIANDAY(MIN(DateTimeGuessed))) * 24 * 60 < 1440
                     )
                     WHERE UniqueId = ?
                     GROUP BY UniqueId""", (unique_id,))
