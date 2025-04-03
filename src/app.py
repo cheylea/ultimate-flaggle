@@ -26,6 +26,7 @@ import cv2
 import scipy.spatial as sp
 from PIL import Image
 import numpy as np
+import pytz
 
 # Required for using Database Functions
 import sqlite3
@@ -33,6 +34,8 @@ import sqlite3
 # Set paths
 from pathlib import Path
 THIS_FOLDER = Path(__file__).parent.resolve()
+
+
 #--------------------------------------------------
 
 
@@ -53,7 +56,9 @@ THIS_FOLDER = Path(__file__).parent.resolve()
 # 14. Lookup a countries details by index
 # 15. Get all of a users stats
 # 16. Cookies functions
-# 17. Country Compare
+# 17. Database functions
+# 18. Country Compare
+# 19. Time Zones
 
 # 1. User UniqueId generation 
 def get_unique_id():
@@ -90,7 +95,7 @@ def get_unique_id():
     return unique_id, consent_status, None
 
 # 2. Get the users game data from today
-def get_user_game_data_today(conn, unique_id):
+def get_user_game_data_today(conn, unique_id, date):
     """Fetch user game data from the database for today.
     
     Key arguments
@@ -101,7 +106,7 @@ def get_user_game_data_today(conn, unique_id):
 
     cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
                       JOIN Country c ON c.Country = gd.Country
-                      WHERE UniqueId = ? AND date(DateTimeGuessed) = ? ORDER BY DateTimeGuessed DESC""", (unique_id, date.today()))
+                      WHERE UniqueId = ? AND DateTimeGuessed >= ? ORDER BY DateTimeGuessed DESC""", (unique_id, date))
     data = cursor.fetchall()
 
     conn.close()
@@ -430,14 +435,14 @@ def get_chart_labels_values(win_stats):
     return labels, values
 
 # 13. Get todays country
-def get_todays_country(conn):
+def get_todays_country(date, conn):
     """Execute SQL to get todays country
 
     Key arguments
     conn -- sqlite connection
     sql -- select string of sqlite code
     """
-    sql = "SELECT CountryId FROM Answer WHERE Date = '" + str(date.today()) + "'"
+    sql = "SELECT CountryId FROM Answer WHERE Date = '" + str(date) + "'"
     c = conn.cursor()
     c.execute(sql)
     result = c.fetchone()
@@ -562,7 +567,7 @@ def execute_sql_fetch_all(conn, sql):
     result = c.fetchall()
     return result
 
-# 17. Country Compare
+# 18. Country Compare
 # Function for cross references colours for two cleaned flags
 def match_colours(image1, image2):
     """Compare two flags and show the difference between them
@@ -698,8 +703,11 @@ def process_flags(imagepath):
     image = image.resize((800,530))
     image.save(imagepath.replace("flags","cleaned_flags"))
 
+# 19. Time Zones
 
-
+def utc_to_local(user_tz):
+    """Convert UTC datetime to the user's local timezone."""
+    return dt.datetime.now(pytz.timezone(user_tz))
 #--------------------------------------------------
 
 ##### A P P L I C A T I O N #####------------------
@@ -713,11 +721,20 @@ def process_flags(imagepath):
 @app.route("/")
 def home():
     ### Set up the game and fetch any required user information
-    #consent_status = request.json.get("cookie-consent") 
+
+    user_tz = request.args.get('timezone', 'UTC')  # Default to UTC if missing
+    today_dt = utc_to_local(user_tz)
+    today_dt_utc = today_dt
+    today_date = utc_to_local(user_tz).date()
+
+    local_start_of_day = dt.datetime(today_dt.year, today_dt.month, today_dt.day, 0, 0, 0, 0)
+    local_start_of_day = pytz.timezone(user_tz).localize(local_start_of_day)  # Localize the datetime to the local time zone
+    utc_start_of_day = local_start_of_day.astimezone(pytz.utc)  # Convert to UTC
+    today_date
 
     flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
     conn = connect_to_database(flaggle) # Connect to database
-    todayscountryindex = get_todays_country(conn) # Get todays country index
+    todayscountryindex = get_todays_country(today_date, conn) # Get todays country index
 
     # Get todays country details
     todayscountryid, todayscountrylat, todayscountrylong, todayscountry, todayscountryurl = get_country_details(conn, todayscountryindex)
@@ -726,8 +743,6 @@ def home():
     conn.close()
     # Get any existing id for users
     user_id, consent_status, response = get_unique_id()
-    print(user_id)
-    print(consent_status)
 
     # Get any current win stats
     win_stats, average_win_time, current_streak, average_win_guesses, max_streak, win_rate, total_played = get_all_stats(flaggle, user_id)
@@ -736,7 +751,8 @@ def home():
     ### Display any guessed countries for the user
     # Fetch todays game data
     conn = connect_to_database(flaggle)
-    user_today_data = get_user_game_data_today(conn, user_id)
+    user_today_data = get_user_game_data_today(conn, user_id, utc_start_of_day.strftime('%Y-%m-%d %H:%M:%S'))
+    print(utc_start_of_day.strftime('%Y-%m-%d %H:%M:%S'))
     conn.close()
     # Fetch id for last game played
     conn = connect_to_database(flaggle)
@@ -752,7 +768,6 @@ def home():
         print("First game ever!")
 
     if user_today_data:
-        print("nothing here!...yet")
         guessed_country_id, guessed_distances, direction, image_url, name = zip(*user_today_data)
     else:
         guessed_country_id, guessed_distances, direction, image_url, name = [], [], [], [], []  # Empty lists if no data
@@ -823,7 +838,8 @@ def home():
                            , total_played = total_played
                            , labels = labels
                            , values = values
-                           , total_guesses = total_guesses)
+                           , total_guesses = total_guesses
+                           , today = today_date)   
 
     if response:  
         # Set the response body to the rendered template
@@ -849,7 +865,8 @@ def guesscountry():
     guessedcountryindex = execute_sql_fetch_one(conn, "SELECT CountryId FROM Country WHERE Name = '" + guessedcountry + "'")
     guessedcountryindex = guessedcountryindex[0]
     # Get todays country
-    todayscountryindex = get_todays_country(conn)
+    today_date = request.args.get('today', dt.datetime.now().date())
+    todayscountryindex = get_todays_country(today_date, conn)
     
     # Perform Country Compare Functions
     # Get values for the guessed country
