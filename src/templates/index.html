@@ -645,7 +645,17 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(data => console.log("Consent stored in session:", data))
     .catch(error => console.error("Error:", error));
 });
-  
+
+// Detect user's time zone and reload the page with it in the query string
+document.addEventListener("DOMContentLoaded", function () {
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Only reload if the timezone isn't already in the URL
+            if (!urlParams.has("timezone")) {
+                window.location.href = `/?timezone=${encodeURIComponent(userTimeZone)}`;
+            }
+        });
 </script>
 </body>
 </html>
