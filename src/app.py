@@ -5,6 +5,7 @@
 import os
 import datetime as dt
 from datetime import date
+from datetime import timedelta
 from socket import gethostname # for PythonAnywhere
 from apscheduler.schedulers.background import BackgroundScheduler # for refreshing the page
 
@@ -12,6 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler # for refreshi
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, session
 app = Flask(__name__, instance_relative_config=True)
 app.secret_key = "70656E6E79616E64626173696C" # Required for session
+app.permanent_session_lifetime = timedelta(days=1)
 
 # Setup for identifying unique user id and using cookies
 import uuid
@@ -708,6 +710,13 @@ def process_flags(imagepath):
 def utc_to_local(user_tz):
     """Convert UTC datetime to the user's local timezone."""
     return dt.datetime.now(pytz.timezone(user_tz))
+
+def get_today_date(user_tz):
+    """Get todays date"""
+    today_dt = utc_to_local(user_tz)
+    today_date = utc_to_local(user_tz).date()
+
+    return today_dt, today_date
 #--------------------------------------------------
 
 ##### A P P L I C A T I O N #####------------------
@@ -723,14 +732,12 @@ def home():
     ### Set up the game and fetch any required user information
 
     user_tz = request.args.get('timezone', 'UTC')  # Default to UTC if missing
-    today_dt = utc_to_local(user_tz)
-    today_dt_utc = today_dt
-    today_date = utc_to_local(user_tz).date()
+    session["timezone"] = user_tz
+    today_dt, today_date = get_today_date(user_tz)
 
     local_start_of_day = dt.datetime(today_dt.year, today_dt.month, today_dt.day, 0, 0, 0, 0)
     local_start_of_day = pytz.timezone(user_tz).localize(local_start_of_day)  # Localize the datetime to the local time zone
     utc_start_of_day = local_start_of_day.astimezone(pytz.utc)  # Convert to UTC
-    today_date
 
     flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
     conn = connect_to_database(flaggle) # Connect to database
@@ -752,7 +759,6 @@ def home():
     # Fetch todays game data
     conn = connect_to_database(flaggle)
     user_today_data = get_user_game_data_today(conn, user_id, utc_start_of_day.strftime('%Y-%m-%d %H:%M:%S'))
-    print(utc_start_of_day.strftime('%Y-%m-%d %H:%M:%S'))
     conn.close()
     # Fetch id for last game played
     conn = connect_to_database(flaggle)
@@ -814,12 +820,11 @@ def home():
     
     # Set session ids
     session["user_id"] = user_id
-    session["game_id"] = game_id   
+    session["game_id"] = game_id
+    
 
     # Other Formatting
     win_rate = f"{win_rate:.0%}" # Win rate as a percentage
-    
-    print(todayscountry)
 
     # Render the template normally
     rendered_template = render_template("index.html"
@@ -838,8 +843,7 @@ def home():
                            , total_played = total_played
                            , labels = labels
                            , values = values
-                           , total_guesses = total_guesses
-                           , today = today_date)   
+                           , total_guesses = total_guesses)   
 
     if response:  
         # Set the response body to the rendered template
@@ -854,18 +858,18 @@ def guesscountry():
     flaggle = os.path.join(THIS_FOLDER, "databases", "flaggle.db") # Get the database path
     conn = connect_to_database(flaggle) # Connect to database
     # Get user id and game id
+    print(session)
     user_id = session.get("user_id")  # Retrieve the ID from query parameters
     game_id = session.get("game_id")  # Retrieve the ID from query parameters
-    print(user_id)
-    print(game_id)
-
     # Get the country they have gussed
     guessedcountry = request.form['guessedcountry']
     guessedcountry = guessedcountry.replace("'", "''")  # Double the single quotes
     guessedcountryindex = execute_sql_fetch_one(conn, "SELECT CountryId FROM Country WHERE Name = '" + guessedcountry + "'")
     guessedcountryindex = guessedcountryindex[0]
+
     # Get todays country
-    today_date = request.args.get('today', dt.datetime.now().date())
+    user_tz = session.get('timezone') # Default to UTC if missing
+    today_dt, today_date = get_today_date(user_tz)
     todayscountryindex = get_todays_country(today_date, conn)
     
     # Perform Country Compare Functions
@@ -874,7 +878,8 @@ def guesscountry():
 
     # Get values for todays country
     todayscountryid, todayscountrylat, todayscountrylong, todayscountry, todayscountryurl = get_country_details(conn, todayscountryindex)
-
+    print(todayscountry)
+    
     # Calculate the distance and direction between the two countries
     coord1 = [guessedcountrylat, guessedcountrylong]
     coord2 = [todayscountrylat, todayscountrylong]
@@ -908,7 +913,7 @@ def guesscountry():
         conn.close()
     except:
         return redirect("error.html")
-    
+    print("done")
     return redirect("/")
 
 # 3. Accept Cookies
