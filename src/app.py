@@ -107,7 +107,7 @@ def get_user_game_data_today(conn, unique_id, date):
     cursor = conn.cursor()
 
     cursor.execute("""SELECT gd.Country, Distance, Direction, ComparedImageUrl, Name FROM GameDetail gd
-                      JOIN Country c ON c.Country = gd.Country
+                      JOIN Country c ON IFNULL(c.Country,'NA') = gd.Country
                       WHERE UniqueId = ? AND DateTimeGuessed >= ? ORDER BY DateTimeGuessed DESC""", (unique_id, date))
     data = cursor.fetchall()
 
@@ -780,6 +780,10 @@ def home():
 
     # Format the select results to display in the template
     guessed_country_id = list(guessed_country_id)
+    for x in guessed_country_id:
+        print(x)
+        if x == None:
+            x = "NA"
     guessed_image_path = [url_for('static', filename=f'images/cleaned_flags/{str(x).lower()}.png') for x in guessed_country_id]
     #guessed_distances = [f"{int(round(x,0)/1000):,} km" if x != 0 else 0 for x in guessed_distances]
     guessed_distances = [ # Put distances into buckets
@@ -875,6 +879,9 @@ def guesscountry():
     # Perform Country Compare Functions
     # Get values for the guessed country
     guessedcountryid, guessedcountrylat, guessedcountrylong, guessedcountry, guessedcountryurl = get_country_details(conn, guessedcountryindex)
+
+    if guessedcountryid == None:
+        guessedcountryid = "NA"
 
     # Get values for todays country
     todayscountryid, todayscountrylat, todayscountrylong, todayscountry, todayscountryurl = get_country_details(conn, todayscountryindex)
