@@ -727,8 +727,7 @@ def get_today_date(user_tz):
 @app.after_request
 def add_cache_headers(response):
     if request.path.startswith('/static/'):
-        response.cache_control.max_age = 31536000  # 1 year in seconds
-        response.cache_control.public = True
+        response.headers["Cache-Control"] = "public, max-age=31536000"
     return response
 
 ##### A P P L I C A T I O N #####------------------
