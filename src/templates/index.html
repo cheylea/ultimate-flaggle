@@ -10,8 +10,11 @@
         
     <!-- Preload CSS
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-        <link rel="preload" href="{{ url_for('static', filename='css/stylesheet.css') }}" as="style">
-        <link rel="preload" href="{{ url_for('static', filename='css/stylesheet-mobile.css') }}" as="style">
+      <link rel="preload" href="{{ url_for('static', filename='css/stylesheet.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+      <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}"></noscript>
+      
+      <link rel="preload" href="{{ url_for('static', filename='css/stylesheet-mobile.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+      <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet-mobile.css') }}"></noscript>
     
     <!-- CSS
       –––––––––––––––––––––––––––––––––––––––––––––––––– -->
@@ -117,7 +120,7 @@
       </tr>
       {% for flag, country, distance, direction, image in guesses %}
       <tr>
-         <td><img src="{{ flag }}" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer;max-width: 100%; height: auto;"><br>{{ country }}</td>
+         <td><img src="{{ flag }}" loading="lazy" onmouseover="changeImageOnHover(this)" onmouseout="revertImage(this)" style="cursor:pointer; max-width: 100%; height: auto;"><br>{{ country }}</td>
          <td>
             <div class="compass">
                 <div class="compass-inner">
@@ -131,7 +134,7 @@
          </div>
          <br>{{ distance }}
         </td>
-          <td><img src="{{ image }}" style="max-width: 100%; height: auto;"><br>&nbsp;</td>
+          <td><img src="{{ image }}"  loading="lazy" style="max-width: 100%; height: auto;"><br>&nbsp;</td>
       </tr>
       {% endfor %}
     </table>
@@ -289,7 +292,7 @@
             <p>It was {{ country }}.</p>
         {% endif %}
       <p>Come back tomorrow to keep up your streak.</p>
-      <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
+      <img src="{{ countryurl }}"  loading="lazy" style="max-width: 30%; height: auto; margin: 2%;">
       
       <table class="statsTable">
         <tr>
@@ -329,7 +332,7 @@
       <br>
       <p>You're out of guesses! The correct answer was {{ country }}.</p>
       <p>Try again tomorrow.</p>
-      <img src="{{ countryurl }}" style="max-width: 30%; height: auto; margin: 2%;">
+      <img src="{{ countryurl }}"  loading="lazy" style="max-width: 30%; height: auto; margin: 2%;">
       <table class="statsTable">
         <tr>
             <th>Win Streak</th>

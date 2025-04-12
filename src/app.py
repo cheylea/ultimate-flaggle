@@ -11,7 +11,10 @@ from apscheduler.schedulers.background import BackgroundScheduler # for refreshi
 
 # Setup Flask app
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, session
+from flask_compress import Compress
 app = Flask(__name__, instance_relative_config=True)
+Compress(app)
+
 app.secret_key = "70656E6E79616E64626173696C" # Required for session
 app.permanent_session_lifetime = timedelta(days=1)
 
@@ -718,6 +721,15 @@ def get_today_date(user_tz):
 
     return today_dt, today_date
 #--------------------------------------------------
+
+# Caching static files
+# Override the default static file handler to add cache headers
+@app.after_request
+def add_cache_headers(response):
+    if request.path.startswith('/static/'):
+        response.cache_control.max_age = 31536000  # 1 year in seconds
+        response.cache_control.public = True
+    return response
 
 ##### A P P L I C A T I O N #####------------------
 # 1. Home page for website
